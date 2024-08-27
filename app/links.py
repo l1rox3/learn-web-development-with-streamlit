@@ -1,0 +1,3 @@
+# Gifs gibt es z,B. hier: https://giphy.com
+FROH = "![](https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzlqd3ZxOHIwenl6anhpNW1sODN6NXVqeWN0NnhyOXBwN2wydWl4OCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OfXKySrn0Ej4s/giphy.gif)"
+TRAURIG = "![](https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2lxdW9xNDM4Zjl4dGVjbXlyMW1tdWlpN3FhaWZtanNhemM0cXptbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OPU6wzx8JrHna/giphy.gif)"

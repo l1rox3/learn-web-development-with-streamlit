@@ -1,19 +1,5 @@
 import streamlit as st
+from links import FROH, TRAURIG
 
-st.title("Nice App")
-
-name = st.text_input("Insert your name here:")
-
-if name:
-    st.write(f"Hello {name}!")
-
-st.text("Map illustration")
-
-#https://docs.streamlit.io/develop/api-reference/charts/st.map
-coords = [
-    {
-        "latitude": 51.221371, 
-        "longitude": 12.500010
-    }
-]
-st.map(data=coords)
+# Emojis: 😎 💻 🚀 😢 😁
+# mehr Emojis gibt es hier: https://apps.timwhitlock.info/emoji/tables/unicode
