@@ -12,7 +12,9 @@
 			"settings": {},
 			"extensions": [
 				"ms-python.python",
-				"ms-python.vscode-pylance"
+				"ms-python.vscode-pylance",
+				"github.copilot",
+				"ms-vscode.vscode-websearchforcopilot"
 			]
 		}
 	},
