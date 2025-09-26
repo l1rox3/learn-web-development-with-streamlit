@@ -763,8 +763,61 @@ def show_main_content():
 def main():
     if not st.session_state["authentifiziert"]:
         show_login_page()
-    else:
-        show_main_content()
+        return
+    # Überprüfe, ob der User gebannt ist (active: false in .data/users.json)
+    user_file = "./data/users.json"
+    username = st.session_state.get("username", "")
+    if username:
+        try:
+            with open(user_file, "r", encoding="utf-8") as f:
+                users = json.load(f)
+            user_data = users.get(username)
+            if user_data and not user_data.get("active", True):
+                st.error("Du wurdest vom System gebannt und wirst jetzt ausgeloggt.")
+                st.session_state["authentifiziert"] = False
+                st.session_state["passwort"] = ""
+                st.session_state["username"] = ""
+                st.session_state["is_admin"] = False
+                st.session_state["show_quiz"] = False
+                st.session_state["needs_password_change"] = False
+                st.session_state["new_password"] = ""
+                st.session_state["confirm_password"] = ""
+                st.experimental_rerun()
+                return
+        except Exception:
+            pass
+    if st.session_state.get("needs_password_change", False):
+        # Zeige Pflicht-Fenster zur Passwortänderung
+        st.markdown("""
+            <div style='display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;'>
+                <h2 style='font-size:2.2rem;margin-bottom:1.2rem;color:#d63031;'>Passwort ändern erforderlich</h2>
+                <p style='font-size:1.1rem;color:#636e72;'>Sie verwenden noch das Standard-Passwort.<br>Bitte vergeben Sie ein neues Passwort (mind. 6 Zeichen), um fortzufahren.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        st.text_input("Neues Passwort", type="password", key="new_password")
+        st.text_input("Passwort bestätigen", type="password", key="confirm_password")
+        if st.button("Passwort jetzt ändern"):
+            if st.session_state["new_password"] != st.session_state["confirm_password"]:
+                st.error("Passwörter stimmen nicht überein")
+            elif len(st.session_state["new_password"]) < 6:
+                st.error("Das neue Passwort muss mindestens 6 Zeichen lang sein.")
+            else:
+                success, msg = change_password(
+                    st.session_state["username"],
+                    st.session_state["passwort"],
+                    st.session_state["new_password"]
+                )
+                if success:
+                    st.session_state["passwort"] = st.session_state["new_password"]
+                    st.session_state["needs_password_change"] = False
+                    st.session_state["new_password"] = ""
+                    st.session_state["confirm_password"] = ""
+                    st.success(msg)
+                    st.rerun()
+                else:
+                    st.error(msg)
+        return
+    show_main_content()
 
 if __name__ == "__main__":
     main()
