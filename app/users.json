@@ -1,0 +1,18 @@
+{
+  "admin": {
+    "password": "77eb77704789f5093118af4fbd676c6e0345311a733cb8deb77bc2a8823b895f",
+    "is_admin": true,
+    "active": true
+  },
+  "benjamin": {
+    "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
+    "is_admin": false,
+    "active": false
+  },
+  "test": {
+    "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
+    "is_admin": false,
+    "active": false,
+    "using_default": false
+  }
+}
