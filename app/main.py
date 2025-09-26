@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 import json
 import os
 import random
@@ -44,15 +45,11 @@ def check_password():
     
     if success:
         st.session_state["authentifiziert"] = True
-        st.session_state["is_admin"] = (st.session_state["username"] == ADMIN_USERNAME)
+        # is_admin wird jetzt von authenticate_user gesetzt
         st.session_state["needs_password_change"] = needs_pw_change
         
-        # Wenn Admin-Login erfolgreich war, speichere das Admin-Passwort
-        if st.session_state["is_admin"]:
-            st.session_state["admin_password"] = st.session_state["passwort"]
-        
         if needs_pw_change:
-            st.warning("Sie verwenden das Standard-Passwort. Bitte ändern Sie es in den Einstellungen.")
+            st.warning("Sie verwenden das Standard-Passwort. Bitte ändern Sie es.")
         if message:
             st.success(message)
         else:
@@ -437,11 +434,10 @@ def show_admin_content():
     for user in active_users:
         col1, col2 = st.columns([3, 1])
         col1.write(user)
-        if user != ADMIN_USERNAME:
-            if col2.button("❌", key=f"remove_{user}", help="Benutzer entfernen"):
+        if col2.button("❌", key=f"remove_{user}", help="Benutzer entfernen"):
                 with st.spinner(f"Entferne Benutzer {user}..."):
-                    admin_pw = st.session_state.get("admin_password", "")
-                    success, msg = deactivate_user(admin_pw, user)
+                    # Verwende den Admin-Username statt Passwort
+                    success, msg = deactivate_user(st.session_state["username"], user)
                     if success:
                         st.success(f"Benutzer {user} wurde erfolgreich entfernt und geblacklistet.")
                         st.rerun()
@@ -763,6 +759,9 @@ def show_main_content():
         show_quiz_content()
 
 def main():
+    # Auto-refresh alle 3 Sekunden
+    st_autorefresh(interval=3000, key="data_refresh")
+    
     if not st.session_state["authentifiziert"]:
         show_login_page()
         return

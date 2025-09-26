@@ -2,8 +2,7 @@ import json
 import os
 import hashlib
 import re
-from typing import Dict, List
-import streamlit as st
+from typing import Dict, List, Tuple
 
 USERS_FILE = "./data/users.json"
 BAD_WORDS_FILE = "./data/bad_words.txt"
@@ -13,14 +12,6 @@ DEFAULT_PASSWORD = "4-26-2011"
 # ---------------------- UTILS ----------------------
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
-
-def force_logout(message: str = None):
-    """Setzt die Session zurück und zeigt ggf. eine Nachricht."""
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    if message:
-        st.warning(message)
-    st.experimental_rerun()
 
 def load_bad_words() -> List[str]:
     if not os.path.exists(BAD_WORDS_FILE):
@@ -55,7 +46,7 @@ def load_users() -> Dict:
     if os.path.exists(USERS_FILE):
         with open(USERS_FILE, "r", encoding="utf-8") as f:
             users = json.load(f)
-    # Admin initial anlegen, falls keine existiert
+    # Admin anlegen, falls keiner existiert
     if not any(u.get("is_admin", False) for u in users.values()):
         users["admin"] = {
             "password": hash_password("24Lama6"),
@@ -71,14 +62,14 @@ def save_users(users: Dict) -> None:
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(users, f, indent=2)
 
-def authenticate_user(username: str, password: str) -> tuple[bool, str, bool]:
+def authenticate_user(username: str, password: str) -> Tuple[bool, str, bool]:
     users = load_users()
 
     if username not in users:
         if not is_valid_username(username):
-            force_logout("Ungültiger Benutzername!")
+            return False, "Ungültiger Benutzername!", False
         if not is_valid_password(password):
-            force_logout("Passwort zu kurz!")
+            return False, "Passwort zu kurz!", False
         users[username] = {
             "password": hash_password(password),
             "is_admin": False,
@@ -91,25 +82,23 @@ def authenticate_user(username: str, password: str) -> tuple[bool, str, bool]:
     user = users[username]
 
     if not user["active"]:
-        force_logout("Dieser Account wurde deaktiviert!")
+        return False, "Dieser Account wurde deaktiviert!", False
 
     if user["password"] == hash_password(password):
-        st.session_state["is_admin"] = user.get("is_admin", False)
         return True, "", user.get("using_default", False)
     elif password == DEFAULT_PASSWORD:
         user["password"] = hash_password(password)
         user["using_default"] = True
         save_users(users)
-        st.session_state["is_admin"] = user.get("is_admin", False)
         return True, "", True
 
-    force_logout("Falsches Passwort!")
+    return False, "Falsches Passwort!", False
 
 def get_active_users() -> List[str]:
     users = load_users()
     return [u for u, data in users.items() if data["active"]]
 
-def deactivate_user(admin_username: str, username: str) -> tuple[bool, str]:
+def deactivate_user(admin_username: str, username: str) -> Tuple[bool, str]:
     users = load_users()
     if admin_username not in users or not users[admin_username].get("is_admin", False):
         return False, "Nur Admins können Benutzer deaktivieren"
@@ -128,7 +117,7 @@ def deactivate_user(admin_username: str, username: str) -> tuple[bool, str]:
         return False, f"Fehler beim Aktualisieren der Blacklist: {str(e)}"
     return True, "Benutzer deaktiviert"
 
-def change_password(username: str, old_password: str, new_password: str) -> tuple[bool, str]:
+def change_password(username: str, old_password: str, new_password: str) -> Tuple[bool, str]:
     if not is_valid_password(new_password):
         return False, "Neues Passwort muss mindestens 6 Zeichen haben"
     users = load_users()
