@@ -22,25 +22,62 @@ def load_bad_words() -> List[str]:
         return [word.strip().lower() for word in f.readlines()]
 
 def is_valid_username(username: str) -> bool:
-    if not (4 <= len(username) <= 20):
+    """
+    Überprüft, ob ein Benutzername gültig ist.
+    
+    Regeln:
+    - Länge zwischen 4 und 20 Zeichen
+    - Nur Buchstaben, Zahlen, Unterstrich und Bindestrich
+    - Keine Schimpfwörter oder anstößige Begriffe
+    
+    Args:
+        username: Der zu prüfende Benutzername
+    
+    Returns:
+        bool: True wenn der Benutzername gültig ist, False sonst
+    """
+    # Prüfe Länge
+    if not username or len(username) < 4 or len(username) > 20:
         return False
-    if not re.match("^[a-zA-Z0-9_-]+$", username):
+        
+    # Prüfe erlaubte Zeichen (Buchstaben, Zahlen, Unterstrich, Bindestrich)
+    if not all(c.isalnum() or c in '_-' for c in username):
         return False
-
+    
+    # Prüfe auf Schimpfwörter
     username_lower = username.lower()
     bad_words = load_bad_words()
+    
+    # Direkter Vergleich
     if username_lower in bad_words:
         return False
+        
+    # Teilwort-Vergleich
     for word in bad_words:
-        pattern = ".*".join(map(re.escape, word))
-        if re.search(pattern, username_lower):
+        if word.strip() and word.strip() in username_lower:
             return False
+            
     return True
 
 def is_valid_password(password: str) -> bool:
     return len(password) >= 6
 
 # ---------------------- USER MANAGEMENT ----------------------
+def is_user_active(username: str) -> bool:
+    """
+    Überprüft, ob ein Benutzer aktiv ist.
+    
+    Args:
+        username: Der zu überprüfende Benutzername
+    
+    Returns:
+        bool: True wenn der Benutzer aktiv ist, False sonst
+    """
+    users = load_users()
+    if username not in users:
+        return False
+    return users[username].get("active", True)
+
 def load_users() -> Dict:
     users = {}
     if os.path.exists(USERS_FILE):
@@ -63,22 +100,37 @@ def save_users(users: Dict) -> None:
         json.dump(users, f, indent=2)
 
 def authenticate_user(username: str, password: str) -> Tuple[bool, str, bool]:
+    """
+    Authentifiziert einen Benutzer oder erstellt einen neuen, wenn das Default-Passwort verwendet wird.
+    
+    Args:
+        username: Der Benutzername
+        password: Das Passwort
+        
+    Returns:
+        Tuple[bool, str, bool]: (Erfolg, Nachricht, Passwort-Änderung erforderlich)
+    """
     users = load_users()
 
+    # Wenn der Benutzer noch nicht existiert
     if username not in users:
         if not is_valid_username(username):
-            return False, "Ungültiger Benutzername!", False
-        if not is_valid_password(password):
-            return False, "Passwort zu kurz!", False
-        users[username] = {
-            "password": hash_password(password),
-            "is_admin": False,
-            "active": True,
-            "using_default": False
-        }
-        save_users(users)
-        return True, "Neuer Benutzer erstellt!", False
+            return False, "Ungültiger Benutzername! (4-20 Zeichen, nur Buchstaben, Zahlen, _ und -)", False
+            
+        # Neuen Benutzer nur mit Default-Passwort erlauben
+        if password == DEFAULT_PASSWORD:
+            users[username] = {
+                "password": hash_password(password),
+                "is_admin": False,
+                "active": True,
+                "using_default": True  # Markiere, dass Default-Passwort verwendet wird
+            }
+            save_users(users)
+            return True, "Neuer Benutzer erstellt! Bitte ändern Sie Ihr Passwort.", True
+        else:
+            return False, f"Für neue Benutzer bitte das Standard-Passwort verwenden!", False
 
+    # Prüfe existierenden Benutzer
     user = users[username]
 
     if not user["active"]:
@@ -86,11 +138,12 @@ def authenticate_user(username: str, password: str) -> Tuple[bool, str, bool]:
 
     if user["password"] == hash_password(password):
         return True, "", user.get("using_default", False)
-    elif password == DEFAULT_PASSWORD:
+    elif password == DEFAULT_PASSWORD and not user.get("using_default", False):
+        # Erlaube Login mit Default-Passwort und markiere für Änderung
         user["password"] = hash_password(password)
         user["using_default"] = True
         save_users(users)
-        return True, "", True
+        return True, "Bitte ändern Sie Ihr Passwort.", True
 
     return False, "Falsches Passwort!", False
 

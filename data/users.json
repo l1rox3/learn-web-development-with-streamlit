@@ -7,12 +7,35 @@
   "benjamin": {
     "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
     "is_admin": false,
-    "active": false
+    "active": true
   },
   "test": {
     "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
     "is_admin": false,
+    "active": true,
+    "using_default": false
+  },
+  "l1rox3": {
+    "password": "0a6ab5a1ea3d24aa42c790ae89bac302f06db296ac820b9a9918c928b113f691",
+    "is_admin": false,
+    "active": true,
+    "using_default": false
+  },
+  "fi_kdich": {
+    "password": "e0f65943f128ed3a7f0eb081bbc466492bf02c9db8ea951dc62b1f2146b26aff",
+    "is_admin": false,
     "active": false,
     "using_default": false
+  },
+  "admin2": {
+    "password": "5e271e0202359be03535a23bfc99e127d6f962d1ab1d610a82a66d3fb28906a6",
+    "is_admin": true,
+    "active": true
+  },
+  "xdxd": {
+    "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
+    "is_admin": false,
+    "active": true,
+    "using_default": true
   }
 }
