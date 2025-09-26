@@ -3,7 +3,7 @@ import json
 import os
 import random
 from datetime import datetime
-from app.user_management import (
+from user_management import (
     authenticate_user,
     get_active_users,
     deactivate_user,
