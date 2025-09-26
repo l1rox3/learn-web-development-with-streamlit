@@ -3,13 +3,15 @@ import json
 import os
 import random
 from datetime import datetime
-from user_management import (
+from app.user_management import (
     authenticate_user,
     get_active_users,
     deactivate_user,
     change_password,
-    ADMIN_USERNAME
+    load_answers,
+    save_answer
 )
+
 
 # Pfad zu den gespeicherten Antworten
 ANSWERS_FILE = "./data/answers"
