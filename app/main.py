@@ -12,7 +12,7 @@ from user_management import (
 )
 
 # Pfad zu den gespeicherten Antworten
-ANSWERS_FILE = "/workspaces/learn-web-development-with-streamlit/app/ansers"
+ANSWERS_FILE = "./data/answers"
 
 # Initialisiere Session State Variablen
 if "authentifiziert" not in st.session_state:

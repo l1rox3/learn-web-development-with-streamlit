@@ -4,8 +4,8 @@ import hashlib
 import re
 from typing import Dict, List, Optional
 
-USERS_FILE = "/workspaces/learn-web-development-with-streamlit/app/users.json"
-BAD_WORDS_FILE = "/workspaces/learn-web-development-with-streamlit/app/bad_words.txt"
+USERS_FILE = "./data/users.json"
+BAD_WORDS_FILE = "./data/bad_words.txt"
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "24Lama6"
 DEFAULT_PASSWORD = "4-26-2011"
