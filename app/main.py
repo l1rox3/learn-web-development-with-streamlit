@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_autorefresh import st_autorefresh
 import json
 import os
 import random
@@ -12,6 +11,8 @@ from user_management import (
     load_answers,
     save_answer
 )
+from functions.quiz_functions import randomize_options
+from quiz_data import QUIZZES
 
 
 # Pfad zu den gespeicherten Antworten
@@ -759,8 +760,12 @@ def show_main_content():
         show_quiz_content()
 
 def main():
-    # Auto-refresh alle 3 Sekunden
-    st_autorefresh(interval=3000, key="data_refresh")
+    # Auto-refresh über Session State
+    if "last_refresh" not in st.session_state:
+        st.session_state["last_refresh"] = datetime.now()
+    elif (datetime.now() - st.session_state["last_refresh"]).seconds >= 3:
+        st.session_state["last_refresh"] = datetime.now()
+        st.rerun()
     
     if not st.session_state["authentifiziert"]:
         show_login_page()
