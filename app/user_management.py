@@ -68,7 +68,9 @@ def load_users() -> Dict:
 
 def save_users(users: Dict) -> None:
     """Speichert die Benutzerdaten in der JSON-Datei."""
-    os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
+    dir_name = os.path.dirname(USERS_FILE)
+    if dir_name:
+        os.makedirs(dir_name, exist_ok=True)
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(users, f, indent=2)
 
