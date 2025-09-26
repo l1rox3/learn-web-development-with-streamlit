@@ -31,13 +31,16 @@ def is_valid_username(username: str) -> bool:
         return False
         
     bad_words = load_bad_words()
-    if username.lower() in bad_words:
+    username_lower = username.lower()
+    # Direkter Treffer
+    if username_lower in bad_words:
         return False
-        
+    # Fuzzy-Match: Erlaube beliebige Zeichen zwischen den Buchstaben
     for word in bad_words:
-        if word in username.lower():
+        # Erzeuge Regex wie h.*u.*r.*e.*n.*s.*o.*h.*n
+        pattern = ".*".join(map(re.escape, word))
+        if re.search(pattern, username_lower):
             return False
-    
     return True
 
 def is_valid_password(password: str) -> bool:
