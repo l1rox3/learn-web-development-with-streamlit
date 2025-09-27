@@ -1,25 +1,22 @@
 import streamlit as st
 import json
-import os
 import random
 import requests
 from datetime import datetime
 from typing import List, Dict, Any
 from streamlit.components.v1 import html
-from user_management import authenticate_user, load_users
-import admin  # dein admin.py mit show_admin_panel()
-from quizzes import load_answers   # dein quiz.py mit show_quiz()
-from admin import show_admin_panel
 
-API_URL = "https://quiz-rel/api"
+# === API ENDPOINT ===
+API_URL = "https://quiz-rel.onrender.com/api/answers"   # <--- passe die URL auf deinen Render-Server an
 
+# === SAFE IMPORTS (Fallbacks falls Module fehlen) ===
 try:
     from user_management import authenticate_user, change_password, is_user_active
 except Exception:
     def authenticate_user(u, p):
-        return False, "Lokales Dev-User-System nicht verfügbar.", False
+        return True, "Login erfolgreich (Dev-Fallback).", False
     def change_password(u, old, new):
-        return False, "User-Management nicht implementiert."
+        return True, "Passwort geändert (Dev-Fallback)."
     def is_user_active(u):
         return True
 
@@ -30,7 +27,7 @@ except Exception:
         st.info("Admin-Panel nicht verfügbar (Dev-Fallback).")
 
 try:
-    from quizzes import QUIZZES, save_answer as quizzes_save_answer, load_answers as quizzes_load_answers
+    from quizzes import QUIZZES
 except Exception:
     QUIZZES = {
         "Beispiel-Quiz": {
@@ -38,62 +35,26 @@ except Exception:
             "q2": {"frage": "Farbe des Himmels?", "optionen": ["Blau", "Grün"], "richtig": "Blau"}
         }
     }
-    _DATA_DIR = os.path.join(os.getcwd(), "data")
-    os.makedirs(_DATA_DIR, exist_ok=True)
-    _ANSWERS_FILE = os.path.join(_DATA_DIR, "answers.json")
 
-    def quizzes_load_answers() -> List[Dict[str, Any]]:
-        if not os.path.exists(_ANSWERS_FILE):
-            return []
-        try:
-            with open(_ANSWERS_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return []
-
-    def quizzes_save_answer(entry: Dict[str, Any]):
-        answers = quizzes_load_answers()
-        answers.append(entry)
-        with open(_ANSWERS_FILE, "w", encoding="utf-8") as f:
-            json.dump(answers, f, ensure_ascii=False, indent=2)
-
-DATA_DIR = "/workspaces/learn-web-development-with-streamlit/data"
-ANSWERS_FILE = os.path.join(DATA_DIR, "answers.json")
-BAD_WORDS_FILE = os.path.join(DATA_DIR, "bad_words.txt")
-os.makedirs(DATA_DIR, exist_ok=True)
-
-def safe_rerun():
-    try:
-        st.experimental_rerun()
-    except Exception:
-        try:
-            st.rerun()
-        except Exception:
-            pass
-
+# === API-FUNKTIONEN ===
 def load_answers() -> List[Dict[str, Any]]:
     try:
-        r = requests.get(API_URL)
-        return r.json()
-    except Exception:
-        return []
+        r = requests.get(API_URL, timeout=5)
+        if r.status_code == 200:
+            return r.json()
+    except Exception as e:
+        st.error(f"Fehler beim Laden: {e}")
+    return []
 
 def save_answer(entry: Dict[str, Any]):
     try:
-        requests.post(API_URL, json=entry)
+        r = requests.post(API_URL, json=entry, timeout=5)
+        if r.status_code != 200:
+            st.error(f"Fehler beim Speichern: {r.text}")
     except Exception as e:
         st.error(f"Fehler beim Speichern: {e}")
 
-
-def load_bad_words() -> List[str]:
-    if not os.path.exists(BAD_WORDS_FILE):
-        return []
-    try:
-        with open(BAD_WORDS_FILE, "r", encoding="utf-8") as f:
-            return [w.strip().lower() for w in f if w.strip()]
-    except Exception:
-        return []
-
+# === SESSION DEFAULTS ===
 DEFAULT_KEYS = {
     "authentifiziert": False,
     "username": "",
@@ -111,6 +72,7 @@ for k, v in DEFAULT_KEYS.items():
     if k not in st.session_state:
         st.session_state[k] = v
 
+# === LOGIN ===
 def login_page():
     st.title("Willkommen zum Quiz")
     username = st.text_input("Benutzername", key="username_input")
@@ -122,7 +84,7 @@ def login_page():
         success, message, needs_pw_change = authenticate_user(username.strip(), password)
         if success:
             if not is_user_active(username):
-                st.error("Du wurdest vom System geblockt!")
+                st.error("Du wurdest geblockt!")
                 for k in DEFAULT_KEYS:
                     st.session_state[k] = DEFAULT_KEYS[k]
                 return
@@ -132,14 +94,15 @@ def login_page():
             st.session_state.needs_password_change = needs_pw_change
             st.session_state.is_admin = username.lower() == "admin"
             st.success(message)
-            safe_rerun()
+            st.rerun()
         else:
             st.error(message)
 
+# === PASSWORT-ÄNDERUNG ===
 def password_change_page():
     st.warning("Sie müssen Ihr Passwort ändern")
-    new_pw = st.text_input("Neues Passwort", type="password", key="new_pw_input")
-    confirm_pw = st.text_input("Passwort bestätigen", type="password", key="confirm_pw_input")
+    new_pw = st.text_input("Neues Passwort", type="password")
+    confirm_pw = st.text_input("Passwort bestätigen", type="password")
     if st.button("Passwort ändern"):
         if new_pw != confirm_pw:
             st.error("Passwörter stimmen nicht überein")
@@ -152,10 +115,11 @@ def password_change_page():
             st.success(msg)
             st.session_state.passwort = new_pw
             st.session_state.needs_password_change = False
-            safe_rerun()
+            st.rerun()
         else:
             st.error(msg)
 
+# === BESTENLISTE ===
 def leaderboard():
     st.subheader("🏆 Bestenliste")
     answers = load_answers()
@@ -175,37 +139,20 @@ def leaderboard():
         rate = (s["correct"]/s["total"]*100) if s["total"] else 0
         st.markdown(f"{i}. **{user}** — {s['correct']}/{s['total']} richtig ({rate:.1f}%)")
 
+# === QUIZ-PAGE ===
 def quiz_page():
     with st.sidebar:
-        st.markdown("### Einstellungen")
-        bg1 = st.color_picker("Hintergrundfarbe 1", "#1e3c72")
-        bg2 = st.color_picker("Hintergrundfarbe 2", "#2a5298")
-        if st.button("Abmelden", key="logout_button"):
+        if st.button("Abmelden"):
             for k in DEFAULT_KEYS:
                 st.session_state[k] = DEFAULT_KEYS[k]
-            safe_rerun()
-
-    st.markdown(f"""
-        <style>
-        [data-testid="stAppViewContainer"] {{
-            background: linear-gradient(-45deg, {bg1}, {bg2}, {bg2}, {bg1});
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-        }}
-        @keyframes gradientBG {{
-            0% {{background-position:0% 50%}}
-            50% {{background-position:100% 50%}}
-            100% {{background-position:0% 50%}}
-        }}
-        </style>
-    """, unsafe_allow_html=True)
+            st.rerun()
 
     st.header(f"Quiz-Plattform — Angemeldet: {st.session_state.username}")
     quiz_names = list(QUIZZES.keys())
     if not quiz_names:
         st.error("Keine Quiz verfügbar.")
         return
-    choice = st.selectbox("Quiz auswählen", quiz_names, index=quiz_names.index(st.session_state.current_quiz) if st.session_state.current_quiz in quiz_names else 0)
+    choice = st.selectbox("Quiz auswählen", quiz_names)
 
     if st.session_state.current_quiz != choice:
         st.session_state.current_quiz = choice
@@ -216,7 +163,7 @@ def quiz_page():
 
     quiz = QUIZZES[choice]
     questions = list(quiz.values())
-    idx = int(st.session_state.quiz_step) if str(st.session_state.quiz_step).isdigit() else 0
+    idx = st.session_state.quiz_step
     idx = max(0, min(idx, len(questions)-1))
     question = questions[idx]
 
@@ -225,15 +172,10 @@ def quiz_page():
     st.write(f"**{question['frage']}**")
     answer = st.radio("", question.get("optionen", []), key=f"answer_{idx}")
 
-    if st.button("Weiter", key=f"next_{idx}"):
+    if st.button("Weiter"):
         if not answer:
             st.warning("Bitte wähle eine Antwort aus")
         else:
-            bad_words = load_bad_words()
-            if any(bw in answer.lower() for bw in bad_words):
-                fake_ip = f"192.168.{random.randint(1,255)}.{random.randint(1,255)}"
-                st.error(f"Unangemessene Sprache erkannt. IP: {fake_ip}")
-                return
             question_id = f"{choice}_{idx}"
             if question_id not in st.session_state.answered_questions:
                 entry = {
@@ -244,18 +186,15 @@ def quiz_page():
                     "answer": answer,
                     "correct": answer == question.get("richtig")
                 }
-                try:
-                    quizzes_save_answer(entry)
-                except Exception:
-                    save_answer(entry)
+                save_answer(entry)
                 st.session_state.answered_questions.append(question_id)
             if idx < len(questions)-1:
                 st.session_state.quiz_step = idx+1
-                safe_rerun()
+                st.rerun()
             else:
                 st.session_state.show_results = True
                 st.session_state.quiz_duration = datetime.utcnow() - datetime.fromisoformat(st.session_state.quiz_start_time)
-                safe_rerun()
+                st.rerun()
 
     if st.session_state.show_results:
         st.success("Quiz abgeschlossen!")
@@ -266,21 +205,9 @@ def quiz_page():
             total = len(quiz_answers)
             st.metric("Richtige Antworten", f"{correct}/{total}")
             st.metric("Erfolgsquote", f"{(correct/total)*100:.1f}%")
-            if st.session_state.get("quiz_duration"):
-                st.metric("Zeit", f"{st.session_state.quiz_duration.total_seconds()/60:.1f} Minuten")
-            st.markdown("### Deine Antworten")
-            for i, a in enumerate(quiz_answers, 1):
-                status = "✅" if a.get("correct") else "❌"
-                st.markdown(f"**Frage {i}:** {a.get('question')}  \
-Deine Antwort: {a.get('answer')} {status}")
-        if st.button("Quiz neu starten", key="restart_quiz"):
-            st.session_state.quiz_step = 0
-            st.session_state.quiz_start_time = datetime.utcnow().isoformat()
-            st.session_state.show_results = False
-            st.session_state.answered_questions = []
-            safe_rerun()
-        leaderboard()
+            leaderboard()
 
+# === MAIN ===
 def main():
     if not st.session_state.authentifiziert:
         login_page()
@@ -290,14 +217,12 @@ def main():
         if st.session_state.is_admin:
             show_admin_panel()
         else:
-            # Prüfen, ob Benutzer geblockt ist
             if not is_user_active(st.session_state.username):
                 st.error("Du wurdest geblockt und wirst ausgeloggt.")
                 for k in DEFAULT_KEYS:
                     st.session_state[k] = DEFAULT_KEYS[k]
                 return
             quiz_page()
-
 
 if __name__ == "__main__":
     main()
