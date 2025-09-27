@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 import random
+import requests
 from datetime import datetime
 from typing import List, Dict, Any
 from streamlit.components.v1 import html
@@ -9,6 +10,8 @@ from user_management import authenticate_user, load_users
 import admin  # dein admin.py mit show_admin_panel()
 from quizzes import load_answers   # dein quiz.py mit show_quiz()
 from admin import show_admin_panel
+
+API_URL = "https://quiz-rel/api"
 
 try:
     from user_management import authenticate_user, change_password, is_user_active
@@ -69,19 +72,18 @@ def safe_rerun():
             pass
 
 def load_answers() -> List[Dict[str, Any]]:
-    if os.path.exists(ANSWERS_FILE):
-        try:
-            with open(ANSWERS_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return []
-    return []
+    try:
+        r = requests.get(API_URL)
+        return r.json()
+    except Exception:
+        return []
 
 def save_answer(entry: Dict[str, Any]):
-    answers = load_answers()
-    answers.append(entry)
-    with open(ANSWERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(answers, f, ensure_ascii=False, indent=2)
+    try:
+        requests.post(API_URL, json=entry)
+    except Exception as e:
+        st.error(f"Fehler beim Speichern: {e}")
+
 
 def load_bad_words() -> List[str]:
     if not os.path.exists(BAD_WORDS_FILE):
