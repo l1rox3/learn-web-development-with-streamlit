@@ -419,6 +419,11 @@ def save_users(users: dict):
 def authenticate_user(username: str, password: str) -> tuple:
     """Legacy-Funktion: Authentifiziert Benutzer"""
     result, message, role = _auth_manager.authenticate_user(username, password)
+    
+    # WICHTIG: Bei INVALID_USERNAME soll success=False sein
+    if result == LoginResult.INVALID_USERNAME:
+        return False, message, False
+    
     success = result in [LoginResult.SUCCESS, LoginResult.PASSWORD_CHANGE_REQUIRED]
     password_change_required = result == LoginResult.PASSWORD_CHANGE_REQUIRED
     return success, message, password_change_required
