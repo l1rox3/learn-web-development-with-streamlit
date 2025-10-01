@@ -37,5 +37,11 @@
     "is_admin": false,
     "active": true,
     "using_default": true
+  },
+  "fuckyou": {
+    "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
+    "active": false,
+    "is_admin": false,
+    "using_default": true
   }
 }

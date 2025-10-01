@@ -4,6 +4,7 @@ import random
 import requests
 from datetime import datetime
 from typing import List, Dict, Any
+from user_management import load_users, save_users, hash_password, load_answers
 
 # === API ENDPOINT ===
 API_URL = "https://quiz-rel.onrender.com/api/answers"   
@@ -16,10 +17,7 @@ except Exception:
     def change_password(u, old, new): return True, "Passwort geändert (Dev-Fallback)."
     def is_user_active(u): return True
 
-try:
-    from admin import show_admin_panel
-except Exception:
-    def show_admin_panel(): st.info("Admin-Panel nicht verfügbar (Dev-Fallback).")
+from admin import show_admin_panel
 
 try:
     from quizzes import QUIZZES
@@ -132,6 +130,9 @@ def login_page():
     if st.button("Login"):
         if not username or not password:
             st.warning("Bitte Benutzername und Passwort eingeben")
+            return
+        if len(password) < 6:
+            st.warning("Passwort muss mindestens 6 zeichen haben")
             return
         success, message, needs_pw_change = authenticate_user(username.strip(), password)
         if success:
