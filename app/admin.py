@@ -1,5 +1,5 @@
 import streamlit as st
-from user_management import load_users, save_users, hash_password, load_answers
+from app.auth import load_users, save_users, hash_password, load_answers
 
 
 def show_admin_panel():
