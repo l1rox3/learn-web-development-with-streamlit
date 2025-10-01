@@ -5,7 +5,7 @@ import os
 # Füge Parent-Directory zum Path hinzu für Imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.pages.auth import AuthManager, UserRole, load_answers
+from pages.auth import AuthManager, UserRole, load_answers
 
 # ---------------------- KONFIGURATION ----------------------
 st.set_page_config(
