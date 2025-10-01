@@ -1,506 +1,547 @@
 import streamlit as st
 import json
-import random
-import requests
-from datetime import datetime, timezone
-from typing import List, Dict, Any
+import os
+from datetime import datetime
+from auth import authenticate_user, load_users, AuthManager, UserRole, LoginResult
 
-# === IMPORTS ===
-try:
-    # Importiere aus auth.py (NICHT user_management.py)
-    from auth import AuthManager, LoginResult, UserRole, load_answers, save_answer
-    _auth = AuthManager()
-except Exception as e:
-    st.error(f"Fehler beim Laden des Auth-Systems: {e}")
-    st.stop()
+# ---------------------- KONFIGURATION ----------------------
+st.set_page_config(
+    page_title="Quiz-Anwendung",
+    page_icon="📝",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-try:
-    from admin import show_admin_panel
-except Exception:
-    def show_admin_panel():
-        st.warning("Admin-Panel nicht verfügbar")
+# ---------------------- GLOBALE VARIABLEN ----------------------
+QUESTIONS_FILE = "./data/questions.json"
+ANSWERS_DIR = "./data/answers"
+SETTINGS_FILE = "./data/settings.json"
 
-try:
-    from quizzes import QUIZZES
-except Exception:
-    QUIZZES = {
-        "Beispiel-Quiz": {
-            "q1": {"frage": "Was ist 2+2?", "optionen": ["3", "4", "5"], "richtig": "4"},
-            "q2": {"frage": "Farbe des Himmels?", "optionen": ["Blau", "Grün"], "richtig": "Blau"}
-        }
+auth_manager = AuthManager()
+
+# ---------------------- HELPER FUNKTIONEN ----------------------
+def load_settings():
+    """Lädt Benutzereinstellungen"""
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return {
+        "dark_mode": False,
+        "background_color": "#FFFFFF",
+        "primary_color": "#1E88E5"
     }
 
-# === API ENDPOINT (Optional) ===
-API_URL = "https://quiz-rel.onrender.com/api/answers"
+def save_settings(settings):
+    """Speichert Benutzereinstellungen"""
+    os.makedirs(os.path.dirname(SETTINGS_FILE), exist_ok=True)
+    with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(settings, f, indent=2)
 
-# === STYLING ===
-st.markdown("""
-    <style>
-    body {
-        background: linear-gradient(135deg, #1e3c72, #2a5298);
-        color: white;
-    }
-    .stButton>button {
-        border-radius: 12px;
-        background-color: #4CAF50;
-        color: white;
-        padding: 0.6em 1.2em;
-        font-weight: bold;
-        transition: all 0.3s;
-    }
-    .stButton>button:hover {
-        background-color: #45a049;
-        transform: scale(1.05);
-    }
-    .stProgress .st-bo {
-        background-color: #FFD700 !important;
-    }
-    .stMetric {
-        background: rgba(255,255,255,0.1);
-        border-radius: 12px;
-        padding: 10px;
-    }
-    .quiz-card {
-        background: rgba(255,255,255,0.15);
-        padding: 20px;
-        border-radius: 15px;
-        margin: 10px 0;
-        backdrop-filter: blur(10px);
-    }
-    .warning-box {
-        background: rgba(255,165,0,0.2);
-        border-left: 4px solid orange;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# === SESSION DEFAULTS ===
-DEFAULT_KEYS = {
-    "authentifiziert": False,
-    "username": "",
-    "user_role": None,
-    "needs_password_change": False,
-    "quiz_step": 0,
-    "current_quiz": "",
-    "quiz_start_time": None,
-    "show_results": False,
-    "answered_questions": [],
-    "quiz_duration": None
-}
-
-for k, v in DEFAULT_KEYS.items():
-    if k not in st.session_state:
-        st.session_state[k] = v
-
-# === HELPER FUNKTIONEN ===
-def is_user_active(username: str) -> bool:
-    """Prüft ob Benutzer aktiv ist"""
-    users = _auth.load_users()
-    if username in users:
-        return users[username].active
-    return False
-
-def is_admin(username: str) -> bool:
-    """Prüft ob Benutzer Admin ist"""
-    users = _auth.load_users()
-    if username in users:
-        return users[username].role == UserRole.ADMIN
-    return False
-
-# === LEADERBOARD ===
-def leaderboard(sidebar=False):
-    """Zeigt die Bestenliste an"""
-    answers = load_answers()
+def apply_custom_css(settings):
+    """Wendet benutzerdefiniertes CSS an"""
+    dark_mode = settings.get("dark_mode", False)
+    bg_color = settings.get("background_color", "#FFFFFF")
+    primary_color = settings.get("primary_color", "#1E88E5")
     
-    if not answers:
-        msg = "📊 Noch keine Daten vorhanden."
-        if sidebar:
-            st.sidebar.info(msg)
-        else:
-            st.info(msg)
-        return
-    
-    # Berechne Scores
-    scores = {}
-    for a in answers:
-        user = a.get("username")
-        if user not in scores:
-            scores[user] = {"correct": 0, "total": 0}
-        scores[user]["total"] += 1
-        if a.get("correct"):
-            scores[user]["correct"] += 1
-    
-    # Sortiere nach Erfolgsrate
-    ranking = sorted(
-        scores.items(), 
-        key=lambda x: (x[1]["correct"] / (x[1]["total"] or 1), x[1]["correct"]), 
-        reverse=True
-    )
-    
-    if sidebar:
-        st.sidebar.subheader("🏆 Bestenliste")
-        for i, (user, s) in enumerate(ranking[:10], 1):  # Top 10
-            rate = (s["correct"] / s["total"] * 100) if s["total"] else 0
-            medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-            st.sidebar.write(f"{medal} **{user}** — {s['correct']}/{s['total']} ({rate:.0f}%)")
+    # Bestimme Button-Farbe basierend auf Modus
+    if dark_mode:
+        button_bg = "#000000"
+        button_text = "#FFFFFF"
+        text_color = "#FFFFFF"
+        card_bg = "#1E1E1E"
     else:
-        st.subheader("🏆 Bestenliste")
-        cols = st.columns([1, 3, 2, 2])
-        cols[0].write("**Rang**")
-        cols[1].write("**Benutzer**")
-        cols[2].write("**Richtig**")
-        cols[3].write("**Quote**")
-        
-        for i, (user, s) in enumerate(ranking, 1):
-            cols = st.columns([1, 3, 2, 2])
-            medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else str(i)
-            rate = (s["correct"] / s["total"] * 100) if s["total"] else 0
-            cols[0].write(medal)
-            cols[1].write(user)
-            cols[2].write(f"{s['correct']}/{s['total']}")
-            cols[3].write(f"{rate:.1f}%")
-
-# === LOGIN PAGE ===
-def login_page():
-    """Login-Seite mit Benutzer-Registrierung"""
-    st.title("🎮 Willkommen zum Quiz")
-    st.markdown("---")
+        button_bg = "#FFFFFF"
+        button_text = "#000000"
+        text_color = "#000000"
+        card_bg = "#F5F5F5"
     
-    # Info-Box
-    with st.expander("ℹ️ Wie funktioniert die Anmeldung?"):
-        st.markdown("""
-        **Neue Benutzer:**
-        - Wähle einen Benutzernamen (4-20 Zeichen, nur Buchstaben, Zahlen, _ und -)
-        - Verwende das Standard-Passwort: `4-26-2011`
-        - Nach dem ersten Login musst du dein Passwort ändern
+    css = f"""
+    <style>
+        /* Haupthintergrund */
+        .stApp {{
+            background-color: {bg_color};
+        }}
         
-        **Regeln für Benutzernamen:**
-        - Mindestens 4 Zeichen
-        - Maximal 20 Zeichen
-        - Keine verbotenen Wörter
-        - Nur Buchstaben, Zahlen, Unterstrich und Bindestrich
-        """)
+        /* Textfarbe */
+        .stApp, .stMarkdown, p, h1, h2, h3, h4, h5, h6, label {{
+            color: {text_color} !important;
+        }}
+        
+        /* Buttons */
+        .stButton > button {{
+            background-color: {button_bg} !important;
+            color: {button_text} !important;
+            border: 2px solid {primary_color} !important;
+            border-radius: 8px;
+            padding: 0.5rem 2rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }}
+        
+        .stButton > button:hover {{
+            background-color: {primary_color} !important;
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }}
+        
+        /* Sidebar */
+        [data-testid="stSidebar"] {{
+            background-color: {card_bg};
+        }}
+        
+        /* Input Felder */
+        .stTextInput > div > div > input,
+        .stTextArea > div > div > textarea {{
+            background-color: {card_bg};
+            color: {text_color};
+            border: 1px solid {primary_color};
+            border-radius: 6px;
+        }}
+        
+        /* Radio Buttons */
+        .stRadio > div {{
+            background-color: {card_bg};
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid {primary_color};
+        }}
+        
+        /* Success/Error/Info Boxes */
+        .stSuccess, .stError, .stWarning, .stInfo {{
+            border-radius: 8px;
+            padding: 1rem;
+        }}
+        
+        /* Tabs */
+        .stTabs [data-baseweb="tab-list"] {{
+            gap: 8px;
+        }}
+        
+        .stTabs [data-baseweb="tab"] {{
+            background-color: {card_bg};
+            color: {text_color};
+            border-radius: 8px 8px 0 0;
+            padding: 0.5rem 1rem;
+        }}
+        
+        .stTabs [aria-selected="true"] {{
+            background-color: {primary_color} !important;
+            color: white !important;
+        }}
+        
+        /* Container mit Rahmen */
+        .question-container {{
+            background-color: {card_bg};
+            border: 2px solid {primary_color};
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }}
+        
+        /* Überschriften */
+        h1, h2, h3 {{
+            color: {primary_color} !important;
+            font-weight: 600;
+        }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+def load_questions():
+    """Lädt Fragen aus JSON-Datei"""
+    if os.path.exists(QUESTIONS_FILE):
+        try:
+            with open(QUESTIONS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return []
+
+def save_answer(username, answers):
+    """Speichert Antworten eines Benutzers"""
+    os.makedirs(ANSWERS_DIR, exist_ok=True)
+    answer_data = {
+        "username": username,
+        "answers": answers,
+        "timestamp": datetime.now().isoformat(),
+        "completed": True
+    }
+    
+    filepath = os.path.join(ANSWERS_DIR, f"{username}.json")
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(answer_data, f, indent=2, ensure_ascii=False)
+
+def load_user_answers(username):
+    """Lädt gespeicherte Antworten eines Benutzers"""
+    filepath = os.path.join(ANSWERS_DIR, f"{username}.json")
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return None
+
+def check_admin_access():
+    """Prüft ob Admin-Seite verfügbar ist"""
+    admin_file = "./pages/admin.py"
+    return os.path.exists(admin_file)
+
+# ---------------------- SEITENINHALT ----------------------
+def show_settings_page():
+    """Einstellungsseite"""
+    st.title("Einstellungen")
+    
+    settings = load_settings()
+    
+    st.subheader("Darstellung")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        username = st.text_input(
-            "Benutzername", 
-            key="username_input",
-            placeholder="Gib deinen Benutzernamen ein..."
+        dark_mode = st.checkbox(
+            "Dark Mode",
+            value=settings.get("dark_mode", False)
+        )
+        
+        background_color = st.color_picker(
+            "Hintergrundfarbe",
+            value=settings.get("background_color", "#FFFFFF")
         )
     
     with col2:
-        password = st.text_input(
-            "Passwort", 
-            type="password", 
-            key="password_input",
-            placeholder="Standard: 4-26-2011"
+        primary_color = st.color_picker(
+            "Primärfarbe (Akzente)",
+            value=settings.get("primary_color", "#1E88E5")
         )
     
-    if st.button("🔐 Anmelden", use_container_width=True):
-        # Validierung
-        if not username or not password:
-            st.warning("⚠️ Bitte Benutzername und Passwort eingeben")
-            return
-        
-        # Authentifizierung über AuthManager
-        result, message, role = _auth.authenticate_user(username.strip(), password)
-        
-        # Ergebnis auswerten
-        if result == LoginResult.INVALID_USERNAME:
-            st.error(f"❌ {message}")
-            return
-        
-        if result == LoginResult.INVALID_CREDENTIALS:
-            st.error(f"❌ {message}")
-            return
-        
-        if result == LoginResult.ACCOUNT_DISABLED:
-            st.error(f"🚫 {message}")
-            return
-        
-        if result == LoginResult.ACCOUNT_LOCKED:
-            st.error(f"🔒 {message}")
-            return
-        
-        # Login erfolgreich
-        if result in [LoginResult.SUCCESS, LoginResult.PASSWORD_CHANGE_REQUIRED]:
-            # Prüfe nochmal ob Account aktiv ist
-            if not is_user_active(username.strip()):
-                st.error("🚫 Dieser Account wurde deaktiviert!")
-                return
-            
-            # Session State setzen
-            st.session_state.authentifiziert = True
-            st.session_state.username = username.strip()
-            st.session_state.user_role = role
-            st.session_state.needs_password_change = (result == LoginResult.PASSWORD_CHANGE_REQUIRED)
-            
-            st.success(f"✅ {message}")
-            st.rerun()
-    
-    # Leaderboard anzeigen
     st.markdown("---")
-    leaderboard(sidebar=False)
+    
+    if st.button("Einstellungen speichern"):
+        new_settings = {
+            "dark_mode": dark_mode,
+            "background_color": background_color,
+            "primary_color": primary_color
+        }
+        save_settings(new_settings)
+        st.success("Einstellungen gespeichert! Seite wird neu geladen...")
+        st.rerun()
+    
+    if st.button("Auf Standard zurücksetzen"):
+        default_settings = {
+            "dark_mode": False,
+            "background_color": "#FFFFFF",
+            "primary_color": "#1E88E5"
+        }
+        save_settings(default_settings)
+        st.success("Einstellungen zurückgesetzt! Seite wird neu geladen...")
+        st.rerun()
 
-# === PASSWORT ÄNDERN ===
-def password_change_page():
-    """Seite zum Passwort ändern"""
-    st.title("🔑 Passwort ändern")
-    st.warning("⚠️ Du musst dein Passwort ändern, bevor du fortfahren kannst!")
+def show_quiz_page():
+    """Quiz-Seite"""
+    st.title("Quiz")
     
-    st.markdown("---")
+    questions = load_questions()
     
-    with st.form("password_change_form"):
-        old_password = st.text_input(
-            "Aktuelles Passwort", 
-            type="password",
-            help="Falls du das Standard-Passwort verwendest, gib es hier ein"
-        )
+    if not questions:
+        st.warning("Keine Fragen verfügbar. Bitte kontaktieren Sie den Administrator.")
+        return
+    
+    # Prüfe ob Benutzer bereits geantwortet hat
+    saved_answers = load_user_answers(st.session_state.username)
+    
+    if saved_answers and saved_answers.get("completed"):
+        st.info("Sie haben das Quiz bereits ausgefüllt.")
         
-        new_password = st.text_input(
-            "Neues Passwort", 
-            type="password",
-            help="Mindestens 6 Zeichen"
-        )
+        if st.button("Antworten anzeigen"):
+            st.subheader("Ihre Antworten")
+            for i, (question, answer) in enumerate(zip(questions, saved_answers.get("answers", [])), 1):
+                st.markdown(f"**Frage {i}:** {question['question']}")
+                st.write(f"Antwort: {answer}")
+                st.markdown("---")
         
-        confirm_password = st.text_input(
-            "Neues Passwort bestätigen", 
-            type="password"
-        )
+        if st.button("Quiz erneut ausfüllen"):
+            # Lösche alte Antworten
+            filepath = os.path.join(ANSWERS_DIR, f"{st.session_state.username}.json")
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            st.rerun()
         
-        submitted = st.form_submit_button("💾 Passwort ändern", use_container_width=True)
+        return
+    
+    # Quiz-Formular
+    st.write(f"Beantworten Sie die folgenden {len(questions)} Fragen:")
+    
+    with st.form("quiz_form"):
+        answers = []
+        
+        for i, question in enumerate(questions, 1):
+            st.markdown(f"### Frage {i} von {len(questions)}")
+            st.markdown(f"**{question['question']}**")
+            
+            q_type = question.get("type", "text")
+            
+            if q_type == "multiple_choice":
+                answer = st.radio(
+                    "Wählen Sie eine Antwort:",
+                    options=question.get("options", []),
+                    key=f"q_{i}"
+                )
+            elif q_type == "text":
+                answer = st.text_area(
+                    "Ihre Antwort:",
+                    key=f"q_{i}",
+                    height=100
+                )
+            elif q_type == "number":
+                answer = st.number_input(
+                    "Ihre Antwort:",
+                    key=f"q_{i}"
+                )
+            else:
+                answer = st.text_input(
+                    "Ihre Antwort:",
+                    key=f"q_{i}"
+                )
+            
+            answers.append(answer)
+            st.markdown("---")
+        
+        submitted = st.form_submit_button("Quiz absenden")
         
         if submitted:
-            # Validierung
-            if not old_password or not new_password or not confirm_password:
-                st.error("❌ Bitte alle Felder ausfüllen!")
-                return
-            
-            if new_password != confirm_password:
-                st.error("❌ Die Passwörter stimmen nicht überein!")
-                return
-            
-            if len(new_password) < 6:
-                st.error("❌ Das neue Passwort muss mindestens 6 Zeichen haben!")
-                return
-            
-            # Passwort ändern
-            success, msg = _auth.change_password(
-                st.session_state.username,
-                old_password,
-                new_password
-            )
-            
-            if success:
-                st.success(f"✅ {msg}")
-                st.session_state.needs_password_change = False
+            # Prüfe ob alle Fragen beantwortet wurden
+            if all(answers):
+                save_answer(st.session_state.username, answers)
+                st.success("Quiz erfolgreich abgeschickt!")
                 st.balloons()
                 st.rerun()
             else:
-                st.error(f"❌ {msg}")
-    
-    # Logout Option
-    if st.button("🚪 Abmelden"):
-        for k in DEFAULT_KEYS:
-            st.session_state[k] = DEFAULT_KEYS[k]
-        st.rerun()
+                st.error("Bitte beantworten Sie alle Fragen!")
 
-# === QUIZ PAGE ===
-def quiz_page():
-    """Haupt-Quiz-Seite"""
-    
-    # Sidebar
-    with st.sidebar:
-        st.markdown(f"### 👤 {st.session_state.username}")
-        
-        if is_admin(st.session_state.username):
-            st.success("🔧 Admin-Rechte")
-        
-        st.markdown("---")
-        
-        if st.button("🚪 Abmelden", use_container_width=True):
-            for k in DEFAULT_KEYS:
-                st.session_state[k] = DEFAULT_KEYS[k]
-            st.rerun()
-        
-        st.markdown("---")
-        leaderboard(sidebar=True)
-    
-    # Header
-    st.header(f"📘 Quiz-Plattform")
-    
-    # Quiz-Auswahl
-    quiz_names = list(QUIZZES.keys())
-    
-    if not quiz_names:
-        st.error("❌ Keine Quiz verfügbar.")
-        return
-    
-    choice = st.selectbox(
-        "📚 Wähle ein Quiz aus:",
-        quiz_names,
-        help="Wähle das Quiz, das du spielen möchtest"
-    )
-    
-    # Quiz-Wechsel behandeln
-    if st.session_state.current_quiz != choice:
-        st.session_state.current_quiz = choice
-        st.session_state.quiz_step = 0
-        st.session_state.quiz_start_time = datetime.now(timezone.utc).isoformat()
-        st.session_state.show_results = False
-        st.session_state.answered_questions = []
-    
-    quiz = QUIZZES[choice]
-    questions = list(quiz.values())
-    idx = st.session_state.quiz_step
-    idx = max(0, min(idx, len(questions) - 1))
-    question = questions[idx]
-    
-    # Fortschrittsbalken
-    progress = (idx + 1) / len(questions)
-    st.progress(progress)
-    st.caption(f"Frage {idx + 1} von {len(questions)}")
-    
-    # Frage anzeigen
-    st.markdown(
-        f"""
-        <div class='quiz-card'>
-            <h3>❓ {question['frage']}</h3>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    # Antwortmöglichkeiten
-    answer = st.radio(
-        "Wähle deine Antwort:",
-        question.get("optionen", []),
-        key=f"answer_{idx}_{choice}"
-    )
+def show_login_page():
+    """Login-Seite"""
+    st.title("Anmeldung")
     
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        if st.button("➡️ Weiter", use_container_width=True):
-            if not answer:
-                st.warning("⚠️ Bitte wähle eine Antwort aus!")
+        st.markdown("### Bitte melden Sie sich an")
+        
+        username = st.text_input("Benutzername")
+        password = st.text_input("Passwort", type="password")
+        
+        if st.button("Anmelden", use_container_width=True):
+            if username and password:
+                result, message, role = auth_manager.authenticate_user(username, password)
+                
+                if result == LoginResult.SUCCESS:
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.session_state.role = role
+                    st.success(message)
+                    st.rerun()
+                
+                elif result == LoginResult.PASSWORD_CHANGE_REQUIRED:
+                    st.session_state.username = username
+                    st.session_state.role = role
+                    st.session_state.password_change_required = True
+                    st.warning(message)
+                    st.rerun()
+                
+                elif result == LoginResult.INVALID_USERNAME:
+                    st.error(message)
+                
+                elif result == LoginResult.ACCOUNT_LOCKED:
+                    st.error(message)
+                
+                elif result == LoginResult.ACCOUNT_DISABLED:
+                    st.error(message)
+                
+                else:
+                    st.error(message)
             else:
-                # Antwort speichern
-                question_id = f"{choice}_{idx}"
+                st.warning("Bitte füllen Sie alle Felder aus!")
+        
+        st.markdown("---")
+        st.info(f"**Neuer Benutzer?** Verwenden Sie das Standard-Passwort: `4-26-2011`")
+        st.caption("Ihr Benutzername muss zwischen 4-20 Zeichen lang sein und darf nur Buchstaben, Zahlen, _ und - enthalten.")
+
+def show_password_change_page():
+    """Passwort-Änderungs-Seite"""
+    st.title("Passwort ändern")
+    
+    st.warning("Sie müssen Ihr Passwort ändern, um fortzufahren.")
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        old_password = st.text_input("Altes Passwort", type="password")
+        new_password = st.text_input("Neues Passwort", type="password")
+        confirm_password = st.text_input("Neues Passwort bestätigen", type="password")
+        
+        if st.button("Passwort ändern", use_container_width=True):
+            if not all([old_password, new_password, confirm_password]):
+                st.error("Bitte füllen Sie alle Felder aus!")
+            elif new_password != confirm_password:
+                st.error("Die Passwörter stimmen nicht überein!")
+            elif new_password == "4-26-2011":
+                st.error("Bitte wählen Sie ein anderes Passwort als das Standard-Passwort!")
+            else:
+                success, message = auth_manager.change_password(
+                    st.session_state.username,
+                    old_password,
+                    new_password
+                )
                 
-                if question_id not in st.session_state.answered_questions:
-                    entry = {
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                        "username": st.session_state.username,
-                        "quiz": choice,
-                        "question": question.get("frage"),
-                        "answer": answer,
-                        "correct": answer == question.get("richtig")
-                    }
-                    
-                    # Lokal speichern
-                    from auth import save_answer as local_save_answer
-                    local_save_answer(entry)
-                    
-                    st.session_state.answered_questions.append(question_id)
-                
-                # Nächste Frage oder Ergebnisse
-                if idx < len(questions) - 1:
-                    st.session_state.quiz_step = idx + 1
+                if success:
+                    st.success(message)
+                    st.session_state.password_change_required = False
+                    st.session_state.logged_in = True
                     st.rerun()
                 else:
-                    st.session_state.show_results = True
-                    end_time = datetime.now(timezone.utc)
-                    start_time = datetime.fromisoformat(st.session_state.quiz_start_time.replace('Z', '+00:00'))
-                    st.session_state.quiz_duration = end_time - start_time
-                    st.rerun()
+                    st.error(message)
+        
+        st.markdown("---")
+        st.info("Das neue Passwort muss mindestens 6 Zeichen lang sein.")
+
+def show_home_page():
+    """Startseite"""
+    st.title("Willkommen")
     
-    # Ergebnisse anzeigen
-    if st.session_state.show_results:
-        st.markdown("---")
-        st.success("🎉 Quiz abgeschlossen!")
+    st.markdown(f"### Hallo, {st.session_state.username}!")
+    
+    # Benutzerinformationen
+    users = auth_manager.load_users()
+    if st.session_state.username in users:
+        user = users[st.session_state.username]
         
-        # Statistiken berechnen
-        answers = load_answers()
-        quiz_answers = [
-            a for a in answers 
-            if a.get("username") == st.session_state.username 
-            and a.get("quiz") == choice
-        ]
+        col1, col2 = st.columns(2)
         
-        if quiz_answers:
-            correct = len([a for a in quiz_answers if a.get("correct")])
-            total = len(quiz_answers)
-            rate = (correct / total * 100) if total > 0 else 0
-            
-            # Metriken anzeigen
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric("✅ Richtige Antworten", f"{correct}/{total}")
-            
-            with col2:
-                st.metric("📊 Erfolgsquote", f"{rate:.1f}%")
-            
-            with col3:
-                if st.session_state.quiz_duration:
-                    duration_sec = st.session_state.quiz_duration.total_seconds()
-                    st.metric("⏱️ Zeit", f"{int(duration_sec)}s")
-            
-            # Bewertung
-            if rate >= 90:
-                st.success("🌟 Hervorragend!")
-            elif rate >= 70:
-                st.info("👍 Gut gemacht!")
-            elif rate >= 50:
-                st.warning("📚 Noch Luft nach oben!")
+        with col1:
+            st.info(f"**Rolle:** {user.role.value.title()}")
+            st.info(f"**Account erstellt:** {user.created_at.strftime('%d.%m.%Y')}")
+        
+        with col2:
+            if user.last_login:
+                st.info(f"**Letzter Login:** {user.last_login.strftime('%d.%m.%Y %H:%M')}")
+            st.info(f"**Status:** Aktiv")
+    
+    st.markdown("---")
+    
+    # Schnellzugriff
+    st.subheader("Schnellzugriff")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("Zum Quiz", use_container_width=True):
+            st.session_state.page = "Quiz"
+            st.rerun()
+    
+    with col2:
+        if st.button("Einstellungen", use_container_width=True):
+            st.session_state.page = "Einstellungen"
+            st.rerun()
+    
+    with col3:
+        # Prüfe ob Admin-Seite existiert
+        if st.session_state.role == UserRole.ADMIN:
+            if check_admin_access():
+                if st.button("Admin-Panel", use_container_width=True):
+                    # Navigiere zur Admin-Seite
+                    st.switch_page("pages/admin.py")
             else:
-                st.error("💪 Weiter üben!")
-        
-        # Leaderboard
-        st.markdown("---")
-        leaderboard(sidebar=False)
-        
-        # Neues Quiz starten
-        if st.button("🔄 Neues Quiz starten", use_container_width=True):
-            st.session_state.quiz_step = 0
-            st.session_state.quiz_start_time = datetime.now(timezone.utc).isoformat()
-            st.session_state.show_results = False
-            st.session_state.answered_questions = []
+                st.button("Admin-Panel (nicht verfügbar)", disabled=True, use_container_width=True)
+                st.caption("Die Admin-Seite wurde nicht gefunden.")
+    
+    st.markdown("---")
+    
+    # Quiz-Status
+    saved_answers = load_user_answers(st.session_state.username)
+    if saved_answers and saved_answers.get("completed"):
+        st.success("Sie haben das Quiz bereits ausgefüllt!")
+        if st.button("Antworten ansehen"):
+            st.session_state.page = "Quiz"
+            st.rerun()
+    else:
+        st.warning("Sie haben das Quiz noch nicht ausgefüllt.")
+        if st.button("Quiz starten"):
+            st.session_state.page = "Quiz"
             st.rerun()
 
-# === MAIN ===
+# ---------------------- HAUPTPROGRAMM ----------------------
 def main():
-    """Hauptfunktion"""
+    # Session State initialisieren
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
+    if "username" not in st.session_state:
+        st.session_state.username = ""
+    if "role" not in st.session_state:
+        st.session_state.role = None
+    if "password_change_required" not in st.session_state:
+        st.session_state.password_change_required = False
+    if "page" not in st.session_state:
+        st.session_state.page = "Home"
     
-    # Nicht authentifiziert
-    if not st.session_state.authentifiziert:
-        login_page()
+    # Einstellungen laden und CSS anwenden
+    settings = load_settings()
+    apply_custom_css(settings)
+    
+    # Nicht eingeloggt
+    if not st.session_state.logged_in:
+        if st.session_state.password_change_required:
+            show_password_change_page()
+        else:
+            show_login_page()
         return
     
-    # Passwort ändern erforderlich
-    if st.session_state.needs_password_change:
-        password_change_page()
-        return
+    # Sidebar Navigation
+    with st.sidebar:
+        st.title("Navigation")
+        
+        st.markdown(f"**Angemeldet als:** {st.session_state.username}")
+        st.markdown(f"**Rolle:** {st.session_state.role.value.title()}")
+        
+        st.markdown("---")
+        
+        # Navigation
+        pages = ["Home", "Quiz", "Einstellungen"]
+        
+        for page in pages:
+            if st.button(page, use_container_width=True, key=f"nav_{page}"):
+                st.session_state.page = page
+                st.rerun()
+        
+        # Admin-Panel Button in Sidebar
+        if st.session_state.role == UserRole.ADMIN:
+            st.markdown("---")
+            if check_admin_access():
+                if st.button("Admin-Panel", use_container_width=True, key="nav_admin"):
+                    st.switch_page("pages/admin.py")
+            else:
+                st.button("Admin-Panel (nicht verfügbar)", disabled=True, use_container_width=True)
+        
+        st.markdown("---")
+        
+        if st.button("Abmelden", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.session_state.role = None
+            st.session_state.password_change_required = False
+            st.rerun()
     
-    # Account-Status prüfen
-    if not is_user_active(st.session_state.username):
-        st.error("🚫 Dein Account wurde deaktiviert!")
-        for k in DEFAULT_KEYS:
-            st.session_state[k] = DEFAULT_KEYS[k]
-        st.rerun()
-        return
-    
-    # Admin-Panel oder Quiz
-    if is_admin(st.session_state.username):
-        show_admin_panel()
-    else:
-        quiz_page()
+    # Hauptinhalt
+    if st.session_state.page == "Home":
+        show_home_page()
+    elif st.session_state.page == "Quiz":
+        show_quiz_page()
+    elif st.session_state.page == "Einstellungen":
+        show_settings_page()
 
 if __name__ == "__main__":
     main()

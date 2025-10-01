@@ -2,46 +2,109 @@
   "admin": {
     "password": "77eb77704789f5093118af4fbd676c6e0345311a733cb8deb77bc2a8823b895f",
     "is_admin": true,
-    "active": true
+    "active": true,
+    "created_at": "2025-10-01T06:53:17.505244",
+    "last_login": "2025-10-01T06:56:37.577900",
+    "using_default": false,
+    "failed_attempts": 0,
+    "locked_until": null,
+    "email": null,
+    "salt": ""
   },
   "benjamin": {
     "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
     "is_admin": false,
-    "active": true
+    "active": true,
+    "created_at": "2025-10-01T06:53:17.505260",
+    "last_login": null,
+    "using_default": false,
+    "failed_attempts": 0,
+    "locked_until": null,
+    "email": null,
+    "salt": ""
   },
   "test": {
     "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
     "is_admin": false,
     "active": true,
-    "using_default": false
+    "created_at": "2025-10-01T06:53:17.505264",
+    "last_login": null,
+    "using_default": false,
+    "failed_attempts": 0,
+    "locked_until": null,
+    "email": null,
+    "salt": ""
   },
   "l1rox3": {
     "password": "0a6ab5a1ea3d24aa42c790ae89bac302f06db296ac820b9a9918c928b113f691",
     "is_admin": false,
     "active": true,
-    "using_default": false
+    "created_at": "2025-10-01T06:53:17.505267",
+    "last_login": null,
+    "using_default": false,
+    "failed_attempts": 0,
+    "locked_until": null,
+    "email": null,
+    "salt": ""
   },
   "fi_kdich": {
     "password": "e0f65943f128ed3a7f0eb081bbc466492bf02c9db8ea951dc62b1f2146b26aff",
     "is_admin": false,
     "active": false,
-    "using_default": false
+    "created_at": "2025-10-01T06:53:17.505269",
+    "last_login": null,
+    "using_default": false,
+    "failed_attempts": 0,
+    "locked_until": null,
+    "email": null,
+    "salt": ""
   },
   "admin2": {
     "password": "5e271e0202359be03535a23bfc99e127d6f962d1ab1d610a82a66d3fb28906a6",
     "is_admin": true,
-    "active": true
+    "active": true,
+    "created_at": "2025-10-01T06:53:17.505272",
+    "last_login": null,
+    "using_default": false,
+    "failed_attempts": 0,
+    "locked_until": null,
+    "email": null,
+    "salt": ""
   },
   "xdxd": {
     "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
     "is_admin": false,
     "active": true,
-    "using_default": true
+    "created_at": "2025-10-01T06:53:17.505275",
+    "last_login": null,
+    "using_default": true,
+    "failed_attempts": 0,
+    "locked_until": null,
+    "email": null,
+    "salt": ""
   },
   "fuckyou": {
     "password": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
-    "active": false,
     "is_admin": false,
-    "using_default": true
+    "active": false,
+    "created_at": "2025-10-01T06:53:17.505277",
+    "last_login": null,
+    "using_default": true,
+    "failed_attempts": 0,
+    "locked_until": null,
+    "email": null,
+    "salt": ""
+  },
+  "mehmet-ali": {
+    "password": "3209c36b80cdd5a87daae22152cb81d6ab0ace06a9e877c17011a3c39a018bed",
+    "is_admin": false,
+    "active": true,
+    "created_at": "2025-10-01T06:53:17.543697",
+    "last_login": null,
+    "using_default": false,
+    "failed_attempts": 0,
+    "locked_until": null,
+    "email": null,
+    "salt": "4bd8099ebe7fa8eb2ef290ff713a4287"
   }
 }
