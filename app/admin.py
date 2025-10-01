@@ -5,7 +5,7 @@ import os
 # Füge Parent-Directory zum Path hinzu für Imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from auth import AuthManager, UserRole, load_answers
+from app.pages.auth import AuthManager, UserRole, load_answers
 
 # ---------------------- KONFIGURATION ----------------------
 st.set_page_config(
@@ -175,7 +175,7 @@ def show_user_management(current_admin):
                         st.error(error_msg)
                     else:
                         password_hash, salt = auth_manager.hash_password(new_password)
-                        from auth import User
+                        from app.pages.auth import User
                         from datetime import datetime
                         
                         users[new_username] = User(

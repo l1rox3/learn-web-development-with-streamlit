@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import os
 from datetime import datetime
-from auth import authenticate_user, load_users, AuthManager, UserRole, LoginResult
+from app.pages.auth import authenticate_user, load_users, AuthManager, UserRole, LoginResult
 
 # ---------------------- KONFIGURATION ----------------------
 st.set_page_config(
