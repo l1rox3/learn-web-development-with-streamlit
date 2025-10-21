@@ -201,37 +201,46 @@ class AuthManager:
             salt=salt
         )
 
-    def save_users(self):
-        """Save users to JSON file in new format"""
+    def save_users(self, users: dict = None):
+        """
+        Speichert die Benutzerliste.
+
+        - users: optional, dict mit User-Objekten. 
+          Wenn None, wird self.users verwendet.
+        """
+        if users is None:
+            users = self.users
+
         data = {}
-        for username, user in self.users.items():
+        for username, user in users.items():
             data[username] = {
                 "password_hash": user.password_hash,
-                "role": user.role.value,  # Immer als String speichern
+                "role": user.role.value,
                 "active": user.active,
                 "created_at": user.created_at.isoformat() if user.created_at else datetime.now().isoformat(),
                 "last_login": user.last_login.isoformat() if user.last_login else None,
                 "using_default": user.using_default,
                 "salt": user.salt
             }
-        
+
         try:
             # Schreibe in temporäre Datei zuerst
             temp_file = f"{USERS_FILE}.tmp"
             with open(temp_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            
-            # Ersetze alte Datei nur wenn Schreiben erfolgreich
+
+            # Backup der alten Datei
             if os.path.exists(USERS_FILE):
-                backup = f"{USERS_FILE}.backup"
                 import shutil
+                backup = f"{USERS_FILE}.backup"
                 shutil.copy2(USERS_FILE, backup)
-            
+
+            # Überschreiben
             os.replace(temp_file, USERS_FILE)
             print(f"Info: {len(data)} Benutzer gespeichert")
         except Exception as e:
             print(f"ERROR: Fehler beim Speichern der Benutzer: {e}")
-            if os.path.exists(temp_file):
+            if os.exists(temp_file):
                 os.remove(temp_file)
 
     # ---------- Login ----------
@@ -421,7 +430,9 @@ class AuthManager:
     
     
 
-    def load_answers(filepath="./data/answers.json"):
+   
+def load_answers(filepath="./data/answers.json"):
+    """Lädt gespeicherte Antworten aus einer JSON-Datei."""
     if not os.path.exists(filepath):
         print(f"Info: {filepath} existiert nicht – starte mit leerer Antwortliste")
         return {}

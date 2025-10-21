@@ -4,14 +4,14 @@
     "role": "admin",
     "active": true,
     "created_at": "2025-10-01T06:53:17.505244",
-    "last_login": "2025-10-14T08:04:23.965147",
+    "last_login": "2025-10-16T09:49:36.863063",
     "using_default": false,
     "salt": ""
   },
   "benjamin": {
     "password_hash": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
     "role": "user",
-    "active": true,
+    "active": false,
     "created_at": "2025-10-01T06:53:17.505260",
     "last_login": null,
     "using_default": false,
@@ -20,7 +20,7 @@
   "test": {
     "password_hash": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
     "role": "user",
-    "active": true,
+    "active": false,
     "created_at": "2025-10-01T06:53:17.505264",
     "last_login": null,
     "using_default": false,
@@ -29,7 +29,7 @@
   "l1rox3": {
     "password_hash": "0a6ab5a1ea3d24aa42c790ae89bac302f06db296ac820b9a9918c928b113f691",
     "role": "user",
-    "active": true,
+    "active": false,
     "created_at": "2025-10-01T06:53:17.505267",
     "last_login": null,
     "using_default": false,
@@ -56,7 +56,7 @@
   "xdxd": {
     "password_hash": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
     "role": "user",
-    "active": true,
+    "active": false,
     "created_at": "2025-10-01T06:53:17.505275",
     "last_login": null,
     "using_default": true,
@@ -74,7 +74,7 @@
   "mehmet-ali": {
     "password_hash": "3209c36b80cdd5a87daae22152cb81d6ab0ace06a9e877c17011a3c39a018bed",
     "role": "user",
-    "active": true,
+    "active": false,
     "created_at": "2025-10-01T06:53:17.543697",
     "last_login": null,
     "using_default": false,
@@ -83,7 +83,7 @@
   "test321": {
     "password_hash": "c31c786931d44802933b1420e67a04b35c3798222ffae24df98ff586444aeec4",
     "role": "user",
-    "active": true,
+    "active": false,
     "created_at": "2025-10-01T12:31:09.314954",
     "last_login": null,
     "using_default": false,
@@ -92,10 +92,46 @@
   "test32": {
     "password_hash": "037e52635dcdf5aaf345ad726cede25d1d2be4e574cde2dd7fa79f3b3e19d0aa",
     "role": "user",
-    "active": true,
+    "active": false,
     "created_at": "2025-10-01T12:40:07.911198",
     "last_login": null,
     "using_default": false,
     "salt": "c4e5064fdb639555d74a9cacc479e287"
+  },
+  "test123": {
+    "password_hash": "25c52215145cb7303a197cfc7469491b8f00f769262f7b1291f38c92013bb3e8",
+    "role": "user",
+    "active": false,
+    "created_at": "2025-10-14T08:56:10.528347",
+    "last_login": null,
+    "using_default": true,
+    "salt": "62f8d63c6c69ff375b95761feb885213"
+  },
+  "adolf": {
+    "password_hash": "5684ccf6162dc64747d0e9498aec23d6f94a0329e09219ab5fc52d6e9638680e",
+    "role": "user",
+    "active": false,
+    "created_at": "2025-10-15T18:37:04.512838",
+    "last_login": null,
+    "using_default": true,
+    "salt": "a27a8a0aad4e1c8c32fc6987816a7ec6"
+  },
+  "hhhh": {
+    "password_hash": "0acb92776bcaa5ea2de020b1d4e7492ad47664cfd0265b5bd5d409c8e0ff46e6",
+    "role": "user",
+    "active": false,
+    "created_at": "2025-10-15T18:52:54.641825",
+    "last_login": null,
+    "using_default": false,
+    "salt": "39ea8b900be87d5be8baaa1aa78437c2"
+  },
+  "lutz": {
+    "password_hash": "be4884076d9d63c401a462aa7d06827966b740facea4d02ee476f4b941becbd3",
+    "role": "user",
+    "active": true,
+    "created_at": "2025-10-16T09:32:17.775353",
+    "last_login": "2025-10-16T09:56:55.499314",
+    "using_default": true,
+    "salt": "26de184068c6515540442f52b434c786"
   }
 }

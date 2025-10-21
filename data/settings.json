@@ -1,5 +1,4 @@
 {
-  "dark_mode": false,
-  "background_color": "#FFFFFF",
-  "primary_color": "#717171"
+  "current_theme": "Light",
+  "custom_theme": null
 }

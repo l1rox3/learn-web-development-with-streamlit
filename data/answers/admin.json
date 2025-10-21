@@ -1,0 +1,300 @@
+{
+  "username": "admin",
+  "quizzes": [
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:07:36.315892Z",
+      "correct": 1,
+      "total": 2,
+      "time_seconds": 11.42,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Weiß",
+          "correct": false
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:09:47.708756Z",
+      "correct": 1,
+      "total": 2,
+      "time_seconds": 142.82,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Weiß",
+          "correct": false
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:12:46.292265Z",
+      "correct": 1,
+      "total": 2,
+      "time_seconds": 9.6,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Kimono",
+          "correct": false
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:12:56.736268Z",
+      "correct": 1,
+      "total": 2,
+      "time_seconds": 20.05,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Kimono",
+          "correct": false
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:13:02.668080Z",
+      "correct": 2,
+      "total": 2,
+      "time_seconds": 4.97,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:13:22.036519Z",
+      "correct": 2,
+      "total": 2,
+      "time_seconds": 24.34,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:13:26.550781Z",
+      "correct": 2,
+      "total": 2,
+      "time_seconds": 3.09,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:13:43.163663Z",
+      "correct": 2,
+      "total": 2,
+      "time_seconds": 19.71,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:13:51.151821Z",
+      "correct": 2,
+      "total": 2,
+      "time_seconds": 5.24,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-15T19:13:54.032794Z",
+      "correct": 2,
+      "total": 2,
+      "time_seconds": 8.12,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-16T09:22:58.273706Z",
+      "correct": 2,
+      "total": 2,
+      "time_seconds": 4.95,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-16T09:22:58.586363Z",
+      "correct": 2,
+      "total": 2,
+      "time_seconds": 5.26,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Kleidung",
+      "timestamp": "2025-10-16T09:23:01.900337Z",
+      "correct": 2,
+      "total": 2,
+      "time_seconds": 8.57,
+      "answers": {
+        "kleidung1": {
+          "question": "Welches Kleidungsstück ist bei hinduistischen Frauen weit verbreitet?",
+          "answer": "Sari",
+          "correct": true
+        },
+        "kleidung2": {
+          "question": "Welche Farbe wird traditionell bei hinduistischen Hochzeiten getragen?",
+          "answer": "Rot",
+          "correct": true
+        }
+      }
+    },
+    {
+      "quiz_name": "Heilige Tiere",
+      "timestamp": "2025-10-16T09:23:20.971679Z",
+      "correct": 1,
+      "total": 3,
+      "time_seconds": 12.96,
+      "answers": {
+        "tier1": {
+          "question": "Welches Tier wird als Reittier (Vahana) von Lord Shiva betrachtet?",
+          "answer": "Stier Nandi",
+          "correct": true
+        },
+        "tier2": {
+          "question": "Welches Tier wird mit Lord Ganesha in Verbindung gebracht?",
+          "answer": "Affe",
+          "correct": false
+        },
+        "tier3": {
+          "question": "Welches Tier gilt als heilig und wird als 'Mutter' verehrt?",
+          "answer": "Ziege",
+          "correct": false
+        }
+      }
+    },
+    {
+      "quiz_name": "Heilige Tiere",
+      "timestamp": "2025-10-16T09:23:26.348268Z",
+      "correct": 1,
+      "total": 3,
+      "time_seconds": 18.34,
+      "answers": {
+        "tier1": {
+          "question": "Welches Tier wird als Reittier (Vahana) von Lord Shiva betrachtet?",
+          "answer": "Stier Nandi",
+          "correct": true
+        },
+        "tier2": {
+          "question": "Welches Tier wird mit Lord Ganesha in Verbindung gebracht?",
+          "answer": "Affe",
+          "correct": false
+        },
+        "tier3": {
+          "question": "Welches Tier gilt als heilig und wird als 'Mutter' verehrt?",
+          "answer": "Ziege",
+          "correct": false
+        }
+      }
+    }
+  ]
+}
