@@ -17,6 +17,7 @@ import os
 from typing import Dict, List, Optional
 
 import streamlit as st
+
 auth_manager = AuthManager()
 # Lokale Module (wie in deinem Projekt)
 from pages.auth import AuthManager, UserRole, DEFAULT_PASSWORD
