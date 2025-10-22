@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pages.auth import AuthManager, UserRole
 from datetime import datetime
 
+
 # ⚠️ WICHTIG: Session-Validierung bei JEDEM Seitenaufruf!
 if "username" in st.session_state:
     status = auth_manager.check_user_status(st.session_state.username)
