@@ -23,7 +23,7 @@ from pages.auth import AuthManager, UserRole, DEFAULT_PASSWORD
 auth_manager = AuthManager()
 
 # ⚠️ WICHTIG: Session-Validierung bei JEDEM Seitenaufruf!
-if "username" in st.session_state:
+if "username" in st.session_state and st.session_state.username.strip():
     status = auth_manager.check_user_status(st.session_state.username)
     
     if status["should_logout"]:
@@ -41,6 +41,7 @@ if "username" in st.session_state:
         
         # Zurück zum Login
         st.rerun()
+
 # ---------------------- Konfiguration ----------------------
 st.set_page_config(page_title="Quiz", page_icon="📝", layout="wide")
 
