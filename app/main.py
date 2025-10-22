@@ -324,7 +324,7 @@ def render_sidebar() -> None:
 
             if st.button("🏠 Dashboard", use_container_width=True):
                 st.session_state.show_theme_selector = False
-                st.experimental_rerun()
+                st.rerun()
 
             if st.session_state.role == UserRole.ADMIN:
                 if st.button("📝 Quiz (Admin)", use_container_width=True):
