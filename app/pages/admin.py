@@ -9,7 +9,25 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pages.auth import AuthManager, UserRole
 from datetime import datetime
 
-
+# ⚠️ WICHTIG: Session-Validierung bei JEDEM Seitenaufruf!
+if "username" in st.session_state:
+    status = auth_manager.check_user_status(st.session_state.username)
+    
+    if status["should_logout"]:
+        # Benutzer wurde deaktiviert/gelöscht/gesperrt
+        st.error(f"🔒 {status['message']}")
+        st.warning("Du wurdest automatisch ausgeloggt.")
+        
+        # Session komplett löschen
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        
+        # Warte kurz damit User die Nachricht sieht
+        import time
+        time.sleep(2)
+        
+        # Zurück zum Login
+        st.rerun()
 # ---------------------- KONFIGURATION ----------------------
 st.set_page_config(
     page_title="Admin",
