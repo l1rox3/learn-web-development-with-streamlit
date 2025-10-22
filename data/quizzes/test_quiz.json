@@ -1,0 +1,31 @@
+{
+    "title": "Test Quiz",
+    "description": "Ein einfaches Testquiz zum Prüfen des Systems.",
+    "questions": [
+        {
+            "question": "Ist Streamlit ein Python-Framework?",
+            "options": ["Ja", "Nein", "Vielleicht", "Nur am Wochenende"],
+            "answer": "Ja"
+        },
+        {
+            "question": "Wie heißt der Datentyp für ganze Zahlen in Python?",
+            "options": ["float", "int", "str", "bool"],
+            "answer": "int"
+        },
+        {
+            "question": "Was ergibt 2 + 2?",
+            "options": ["3", "4", "5", "42"],
+            "answer": "4"
+        },
+        {
+            "question": "Was ist falsch?",
+            "options": ["Python ist eine Schlange", "print() gibt Text aus", "JavaScript läuft im Browser", "RAM ist unbegrenzt"],
+            "answer": "RAM ist unbegrenzt"
+        },
+        {
+            "question": "Welche Antwort ist richtig?",
+            "options": ["richtig", "faltsch", "faltsch faltsch", "faltsch faltsch faltsch"],
+            "answer": "richtig"
+        }
+    ]
+}
