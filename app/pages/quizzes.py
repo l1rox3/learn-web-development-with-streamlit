@@ -13,7 +13,24 @@ ANSWERS_DIR = "./data/answers"
 QUIZZES_DIR = "./data/quizzes"
 
 st.set_page_config(page_title="Quiz", page_icon="🧩", layout="wide")
-
+if "username" in st.session_state and st.session_state.username.strip():
+    status = auth_manager.check_user_status(st.session_state.username)
+    
+    if status["should_logout"]:
+        # Benutzer wurde deaktiviert/gelöscht/gesperrt
+        st.error(f"🔒 {status['message']}")
+        st.warning("Du wurdest automatisch ausgeloggt.")
+        
+        # Session komplett löschen
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        
+        # Warte kurz damit User die Nachricht sieht
+        import time
+        time.sleep(2)
+        
+        # Zurück zum Login
+        st.rerun()
 # =========================================================
 # INITIALISIERUNG
 # =========================================================
