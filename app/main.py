@@ -21,6 +21,7 @@ import streamlit as st
 # Lokale Module (wie in deinem Projekt)
 from pages.auth import AuthManager, UserRole, DEFAULT_PASSWORD
 
+
 # ---------------------- Konfiguration ----------------------
 st.set_page_config(page_title="Quiz", page_icon="📝", layout="wide")
 
