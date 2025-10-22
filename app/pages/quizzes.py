@@ -7,6 +7,7 @@ import json
 import random
 from datetime import datetime
 import time
+from pages.auth import AuthManager, UserRole, DEFAULT_PASSWORD
 
 auth_manager = AuthManager()
 # ⚠️ WICHTIG: Session-Validierung bei JEDEM Seitenaufruf!
