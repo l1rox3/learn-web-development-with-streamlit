@@ -556,7 +556,7 @@ def show_user_management(current_admin):
                         st.rerun()
     
     st.markdown("<h3 style='margin-top: 2rem; margin-bottom: 1rem;'>Benutzer</h3>", unsafe_allow_html=True)
-    
+    st
     # Bestehende Benutzer
     users = auth_manager.load_users()
     
