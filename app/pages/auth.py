@@ -4,12 +4,15 @@ import hashlib
 import secrets
 from enum import Enum
 from datetime import datetime, timedelta
-from dataclasses import dataclass
-from typing import Optional, Dict, Tuple
+from dataclasses import dataclass, field
+from typing import Optional, Dict, Tuple, List
 
 # ---------------------- KONSTANTEN ----------------------
 USERS_FILE = "./data/users.json"
+BAD_WORDS_FILE = "./data/bad_words.txt"
 DEFAULT_PASSWORD = "4-26-2011"
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_DURATION = timedelta(minutes=30)
 
 # ---------------------- ENUMS ----------------------
 class UserRole(Enum):
@@ -27,18 +30,94 @@ class User:
     last_login: Optional[datetime] = None
     using_default: bool = True
     salt: str = ""
+    failed_attempts: int = 0
+    locked_until: Optional[datetime] = None
     
     def __post_init__(self):
         if self.created_at is None:
             self.created_at = datetime.now()
+    
+    def is_locked(self) -> bool:
+        """Prüft ob der Account gesperrt ist"""
+        if self.locked_until is None:
+            return False
+        if datetime.now() >= self.locked_until:
+            # Sperre ist abgelaufen
+            self.locked_until = None
+            self.failed_attempts = 0
+            return False
+        return True
+    
+    def get_lockout_remaining(self) -> Optional[timedelta]:
+        """Gibt verbleibende Sperrzeit zurück"""
+        if self.locked_until is None:
+            return None
+        remaining = self.locked_until - datetime.now()
+        return remaining if remaining.total_seconds() > 0 else None
 
 # ---------------------- AUTH MANAGER ----------------------
 class AuthManager:
     def __init__(self):
         os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
-        self.max_failed_attempts = 5
-        self.lockout_duration = timedelta(minutes=30)
+        self.max_failed_attempts = MAX_FAILED_ATTEMPTS
+        self.lockout_duration = LOCKOUT_DURATION
         self.users = self.load_users()
+        self.bad_words = self.load_bad_words()
+
+    # ---------- Bad Words ----------
+    def load_bad_words(self) -> List[str]:
+        """Lädt verbotene Benutzernamen aus Datei"""
+        if not os.path.exists(BAD_WORDS_FILE):
+            print(f"Info: {BAD_WORDS_FILE} existiert nicht – erstelle leere Datei")
+            os.makedirs(os.path.dirname(BAD_WORDS_FILE), exist_ok=True)
+            with open(BAD_WORDS_FILE, "w", encoding="utf-8") as f:
+                f.write("# Verbotene Benutzernamen (ein Name pro Zeile)\nadmin\nroot\nsystem\n")
+            return ["admin", "root", "system"]
+        
+        try:
+            with open(BAD_WORDS_FILE, "r", encoding="utf-8") as f:
+                words = []
+                for line in f:
+                    line = line.strip().lower()
+                    # Ignoriere leere Zeilen und Kommentare
+                    if line and not line.startswith("#"):
+                        words.append(line)
+                print(f"Info: {len(words)} verbotene Namen geladen")
+                return words
+        except Exception as e:
+            print(f"ERROR: Fehler beim Laden von {BAD_WORDS_FILE}: {e}")
+            return []
+    
+    def is_username_allowed(self, username: str) -> Tuple[bool, str]:
+        """Prüft ob der Benutzername erlaubt ist"""
+        username_lower = username.lower().strip()
+        
+        # Leerer Name
+        if not username_lower:
+            return False, "Benutzername darf nicht leer sein"
+        
+        # Zu kurz
+        if len(username_lower) < 3:
+            return False, "Benutzername muss mindestens 3 Zeichen lang sein"
+        
+        # Zu lang
+        if len(username_lower) > 20:
+            return False, "Benutzername darf maximal 20 Zeichen lang sein"
+        
+        # Nur erlaubte Zeichen (Buchstaben, Zahlen, Unterstrich, Bindestrich)
+        if not all(c.isalnum() or c in ['_', '-'] for c in username_lower):
+            return False, "Benutzername darf nur Buchstaben, Zahlen, _ und - enthalten"
+        
+        # Bad Words Check
+        if username_lower in self.bad_words:
+            return False, "Dieser Benutzername ist nicht erlaubt"
+        
+        # Teilstring-Check (optional, falls "admin123" auch blockiert werden soll)
+        for bad_word in self.bad_words:
+            if bad_word in username_lower and len(bad_word) > 3:
+                return False, f"Benutzername darf '{bad_word}' nicht enthalten"
+        
+        return True, "OK"
 
     # ---------- Password Hash ----------
     def hash_password(self, password: str, salt: Optional[str] = None) -> Tuple[str, str]:
@@ -60,6 +139,22 @@ class AuthManager:
         """Simple hash for backward compatibility"""
         return hashlib.sha256(password.encode()).hexdigest()
 
+    # ---------- Account Locking ----------
+    def handle_failed_login(self, user: User):
+        """Behandelt fehlgeschlagene Anmeldeversuche"""
+        user.failed_attempts += 1
+        
+        if user.failed_attempts >= self.max_failed_attempts:
+            user.locked_until = datetime.now() + self.lockout_duration
+            print(f"Warning: Account '{user.username}' gesperrt bis {user.locked_until}")
+        
+        self.save_users()
+    
+    def reset_failed_attempts(self, user: User):
+        """Setzt fehlgeschlagene Versuche zurück nach erfolgreicher Anmeldung"""
+        user.failed_attempts = 0
+        user.locked_until = None
+
     # ---------- Users Load/Save ----------
     def load_users(self) -> Dict[str, User]:
         """Load users from JSON file with robust error handling"""
@@ -67,7 +162,6 @@ class AuthManager:
             print(f"Info: {USERS_FILE} existiert nicht, starte mit leerer Benutzerliste")
             return {}
         
-        # Prüfe ob Datei leer ist
         if os.path.getsize(USERS_FILE) == 0:
             print(f"Warning: {USERS_FILE} ist leer")
             return {}
@@ -81,8 +175,6 @@ class AuthManager:
                 data = json.loads(content)
         except json.JSONDecodeError as e:
             print(f"ERROR: Fehler beim Laden von {USERS_FILE}: {e}")
-            print(f"Die Datei ist möglicherweise korrupt. Bitte prüfe sie manuell oder lösche sie.")
-            # Erstelle Backup der korrupten Datei
             backup_file = f"{USERS_FILE}.corrupt.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             try:
                 import shutil
@@ -95,7 +187,6 @@ class AuthManager:
             print(f"ERROR: Unerwarteter Fehler beim Laden: {e}")
             return {}
         
-        # Validiere JSON-Struktur
         if not isinstance(data, dict):
             print(f"ERROR: {USERS_FILE} hat ungültiges Format (erwartet: dict)")
             return {}
@@ -104,7 +195,6 @@ class AuthManager:
             print(f"Info: {USERS_FILE} enthält keine Benutzer")
             return {}
         
-        # Parse jeden Benutzer
         users = {}
         for username, udata in data.items():
             if not isinstance(udata, dict):
@@ -124,71 +214,58 @@ class AuthManager:
     
     def _parse_user(self, username: str, udata: dict) -> Optional[User]:
         """Parse a single user from JSON data"""
-        # 1. Password Hash (erforderlich)
         password_hash = udata.get("password_hash") or udata.get("password")
         if not password_hash:
             print(f"Warning: Kein Passwort für Benutzer '{username}' - überspringe")
             return None
         
-        # 2. Role - Handle verschiedene Formate
-        role = UserRole.USER  # Default
+        # Role
+        role = UserRole.USER
         try:
             if "role" in udata:
                 role_value = udata["role"]
                 if isinstance(role_value, str):
-                    # "admin" oder "user"
                     role = UserRole(role_value)
                 elif isinstance(role_value, bool):
-                    # True/False (sollte nicht vorkommen, aber zur Sicherheit)
                     role = UserRole.ADMIN if role_value else UserRole.USER
-                    print(f"Warning: Benutzer '{username}' hat boolean role - konvertiere zu string")
             elif "is_admin" in udata:
-                # Alte Format: is_admin = True/False
                 is_admin = udata["is_admin"]
                 if isinstance(is_admin, bool):
                     role = UserRole.ADMIN if is_admin else UserRole.USER
-                    print(f"Info: Konvertiere is_admin für '{username}': {is_admin} → {role.value}")
-                elif isinstance(is_admin, str):
-                    # String "true"/"false" oder "admin"/"user"
-                    if is_admin.lower() in ["true", "admin", "1"]:
-                        role = UserRole.ADMIN
-                    else:
-                        role = UserRole.USER
-                    print(f"Info: Konvertiere is_admin string für '{username}': '{is_admin}' → {role.value}")
-        except (ValueError, KeyError, TypeError) as e:
-            print(f"Warning: Fehler beim Parsen der Rolle für '{username}': {e} - verwende USER")
+        except (ValueError, KeyError, TypeError):
             role = UserRole.USER
         
-        # 3. Active Status
+        # Active
         active = udata.get("active", True)
         if not isinstance(active, bool):
             active = True
         
-        # 4. Created At
+        # Timestamps
         created_at = datetime.now()
         if "created_at" in udata and udata["created_at"]:
             try:
                 created_at = datetime.fromisoformat(udata["created_at"])
-            except (ValueError, TypeError) as e:
-                print(f"Warning: Ungültiges created_at für '{username}': {e}")
+            except:
+                pass
         
-        # 5. Last Login
         last_login = None
         if "last_login" in udata and udata["last_login"]:
             try:
                 last_login = datetime.fromisoformat(udata["last_login"])
-            except (ValueError, TypeError) as e:
-                print(f"Warning: Ungültiges last_login für '{username}': {e}")
+            except:
+                pass
         
-        # 6. Using Default Password
+        # Security
         using_default = udata.get("using_default", True)
-        if not isinstance(using_default, bool):
-            using_default = True
-        
-        # 7. Salt
         salt = udata.get("salt", "")
-        if not isinstance(salt, str):
-            salt = ""
+        failed_attempts = udata.get("failed_attempts", 0)
+        
+        locked_until = None
+        if "locked_until" in udata and udata["locked_until"]:
+            try:
+                locked_until = datetime.fromisoformat(udata["locked_until"])
+            except:
+                pass
         
         return User(
             username=username,
@@ -198,16 +275,13 @@ class AuthManager:
             created_at=created_at,
             last_login=last_login,
             using_default=using_default,
-            salt=salt
+            salt=salt,
+            failed_attempts=failed_attempts,
+            locked_until=locked_until
         )
 
     def save_users(self, users: dict = None):
-        """
-        Speichert die Benutzerliste.
-
-        - users: optional, dict mit User-Objekten. 
-          Wenn None, wird self.users verwendet.
-        """
+        """Speichert die Benutzerliste"""
         if users is None:
             users = self.users
 
@@ -220,38 +294,47 @@ class AuthManager:
                 "created_at": user.created_at.isoformat() if user.created_at else datetime.now().isoformat(),
                 "last_login": user.last_login.isoformat() if user.last_login else None,
                 "using_default": user.using_default,
-                "salt": user.salt
+                "salt": user.salt,
+                "failed_attempts": user.failed_attempts,
+                "locked_until": user.locked_until.isoformat() if user.locked_until else None
             }
 
         try:
-            # Schreibe in temporäre Datei zuerst
             temp_file = f"{USERS_FILE}.tmp"
             with open(temp_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
 
-            # Backup der alten Datei
             if os.path.exists(USERS_FILE):
                 import shutil
                 backup = f"{USERS_FILE}.backup"
                 shutil.copy2(USERS_FILE, backup)
 
-            # Überschreiben
             os.replace(temp_file, USERS_FILE)
             print(f"Info: {len(data)} Benutzer gespeichert")
         except Exception as e:
             print(f"ERROR: Fehler beim Speichern der Benutzer: {e}")
-            if os.exists(temp_file):
+            if os.path.exists(temp_file):
                 os.remove(temp_file)
 
     # ---------- Login ----------
     def login(self, username: str, password: str) -> dict:
         """Login a user or auto-register with default password"""
-        # Neuer Benutzer automatisch mit DEFAULT_PASSWORD
+        # Username validieren
+        allowed, message = self.is_username_allowed(username)
+        if not allowed:
+            return {
+                "success": False,
+                "message": message,
+                "role": None,
+                "using_default": False
+            }
+        
+        # Neuer Benutzer - automatisch registrieren mit DEFAULT_PASSWORD
         if username not in self.users:
             if password != DEFAULT_PASSWORD:
                 return {
-                    "success": False, 
-                    "message": f"Neuer Benutzer: bitte Standard-Passwort '{DEFAULT_PASSWORD}' verwenden", 
+                    "success": False,
+                    "message": f"Neuer Benutzer: bitte Standard-Passwort '{DEFAULT_PASSWORD}' verwenden",
                     "role": None,
                     "using_default": False
                 }
@@ -259,67 +342,108 @@ class AuthManager:
             print(f"Info: Neuer Benutzer '{username}' wird registriert")
             pw_hash, salt = self.hash_password(password)
             self.users[username] = User(
-                username=username, 
-                password_hash=pw_hash, 
-                role=UserRole.USER, 
-                using_default=True, 
+                username=username,
+                password_hash=pw_hash,
+                role=UserRole.USER,
+                using_default=True,
                 salt=salt
             )
+            self.users[username].last_login = datetime.now()
             self.save_users()
+            
             return {
-                "success": True, 
-                "message": "Neuer Benutzer erstellt. Bitte Passwort ändern.", 
-                "using_default": True, 
+                "success": True,
+                "message": "Willkommen! Bitte ändere dein Passwort.",
+                "using_default": True,
                 "role": UserRole.USER
             }
 
         # Bestehender Benutzer
         user = self.users[username]
         
+        # Check: Account gesperrt?
+        if user.is_locked():
+            remaining = user.get_lockout_remaining()
+            if remaining:
+                minutes = int(remaining.total_seconds() / 60)
+                return {
+                    "success": False,
+                    "message": f"Account gesperrt. Versuche es in {minutes} Minuten erneut.",
+                    "role": None,
+                    "using_default": False
+                }
+        
+        # Check: Account aktiv?
         if not user.active:
             return {
-                "success": False, 
-                "message": "Benutzer ist deaktiviert", 
+                "success": False,
+                "message": "Benutzer ist deaktiviert",
                 "role": None,
                 "using_default": False
             }
         
+        # Check: Passwort korrekt?
         if not self.verify_password(password, user):
+            self.handle_failed_login(user)
+            attempts_left = self.max_failed_attempts - user.failed_attempts
+            
+            if user.is_locked():
+                return {
+                    "success": False,
+                    "message": f"Zu viele Fehlversuche. Account für {int(self.lockout_duration.total_seconds() / 60)} Minuten gesperrt.",
+                    "role": None,
+                    "using_default": False
+                }
+            
             return {
-                "success": False, 
-                "message": "Ungültige Anmeldedaten", 
+                "success": False,
+                "message": f"Ungültige Anmeldedaten. Noch {attempts_left} Versuche übrig.",
                 "role": None,
                 "using_default": False
             }
 
+        # Erfolgreiche Anmeldung
+        self.reset_failed_attempts(user)
         user.last_login = datetime.now()
         self.save_users()
         
         print(f"Info: Benutzer '{username}' erfolgreich angemeldet (Rolle: {user.role.value})")
         return {
-            "success": True, 
-            "message": "Erfolgreich angemeldet", 
-            "using_default": user.using_default, 
+            "success": True,
+            "message": "Erfolgreich angemeldet",
+            "using_default": user.using_default,
             "role": user.role
         }
 
     # ---------- Register ----------
     def register(self, username: str, password: str) -> dict:
         """Register a new user"""
+        # Username validieren
+        allowed, message = self.is_username_allowed(username)
+        if not allowed:
+            return {
+                "success": False,
+                "message": message,
+                "role": None,
+                "using_default": False
+            }
+        
         if username in self.users:
             return {
-                "success": False, 
-                "message": "Benutzer existiert bereits", 
+                "success": False,
+                "message": "Benutzer existiert bereits",
                 "role": None,
                 "using_default": False
             }
+        
         if password != DEFAULT_PASSWORD:
             return {
-                "success": False, 
-                "message": f"Bitte Standard-Passwort '{DEFAULT_PASSWORD}' verwenden", 
+                "success": False,
+                "message": f"Bitte Standard-Passwort '{DEFAULT_PASSWORD}' verwenden",
                 "role": None,
                 "using_default": False
             }
+        
         return self.login(username, password)
 
     # ---------- Password Change ----------
@@ -353,6 +477,10 @@ class AuthManager:
     # ---------- Admin Functions ----------
     def create_admin(self, username: str, password: str) -> Tuple[bool, str]:
         """Create an admin user"""
+        allowed, message = self.is_username_allowed(username)
+        if not allowed:
+            return False, message
+        
         if username in self.users:
             return False, "Benutzer existiert bereits"
         
@@ -428,7 +556,18 @@ class AuthManager:
         print(f"Info: Admin-Rechte von '{username}' entfernt")
         return True, f"Benutzer '{username}' ist jetzt normaler Benutzer"
     
-    
+    def unlock_user(self, username: str) -> Tuple[bool, str]:
+        """Entsperrt einen gesperrten Benutzer (für Admins)"""
+        if username not in self.users:
+            return False, "Benutzer nicht gefunden"
+        
+        user = self.users[username]
+        user.locked_until = None
+        user.failed_attempts = 0
+        self.save_users()
+        
+        print(f"Info: Benutzer '{username}' entsperrt")
+        return True, f"Benutzer '{username}' wurde entsperrt"
 
    
 def load_answers(filepath="./data/answers.json"):
