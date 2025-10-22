@@ -859,7 +859,7 @@ def show_dashboard() -> None:
 
     # Logout Button
     st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
-    if st.button("🚪 Abmelden", key="btn_logout", use_container_width=True):
+    if st.button(" Abmelden", key="btn_logout", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
