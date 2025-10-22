@@ -785,21 +785,21 @@ def show_dashboard() -> None:
     with col1:
         st.markdown(f"""
         <div class="stats-card">
-            <div class="stats-label">🎮 Absolvierte Quizze</div>
+            <div class="stats-label">Absolvierte Quizze</div>
             <div class="stats-value">{total_quizzes}</div>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown(f"""
         <div class="stats-card">
-            <div class="stats-label">🎯 Richtige Antworten</div>
+            <div class="stats-label">Richtige Antworten</div>
             <div class="stats-value">{total_correct}/{total_questions}</div>
         </div>
         """, unsafe_allow_html=True)
     with col3:
         st.markdown(f"""
         <div class="stats-card">
-            <div class="stats-label">📈 Erfolgsrate</div>
+            <div class="stats-label">Erfolgsrate</div>
             <div class="stats-value">{success_rate:.1f}%</div>
         </div>
         """, unsafe_allow_html=True)
