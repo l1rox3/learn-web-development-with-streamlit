@@ -618,7 +618,7 @@ def show_user_management(current_admin):
                     auth_manager.save_users(users)
                     st.success(f"✓ '{username}' ist jetzt Admin")
                     st.rerun()
-
+ 
 # ---------------------- BESTENLISTE ----------------------
 def show_leaderboard_tab():
     """Bestenliste im Admin-Panel"""
