@@ -11,6 +11,8 @@ from pages.auth import AuthManager
 # =========================================================
 ANSWERS_DIR = "./data/answers"
 QUIZZES_DIR = "./data/quizzes"
+auth_manager = AuthManager()
+
 
 st.set_page_config(page_title="Quiz", page_icon="🧩", layout="wide")
 if "username" in st.session_state and st.session_state.username.strip():
