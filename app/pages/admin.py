@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pages.auth import AuthManager, UserRole
 from datetime import datetime
 
+
 # ---------------------- KONFIGURATION ----------------------
 st.set_page_config(
     page_title="Admin",
