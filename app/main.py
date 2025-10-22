@@ -610,6 +610,76 @@ def show_dashboard() -> None:
     with tab3:
         show_theme_selector()
 
+import subprocess
+import threading
+import time
+import os
+
+# ===============================
+#   Git Auto Sync Funktionen
+# ===============================
+
+def git_commit_push():
+    """Änderungen automatisch committen und pushen."""
+    try:
+        subprocess.run(["git", "add", "."], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "commit", "-m", "auto update"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "push"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass  # still laufen lassen
+
+def git_pull_loop(interval=15):
+    """Läuft dauerhaft im Hintergrund und zieht Änderungen."""
+    while True:
+        try:
+            subprocess.run(["git", "pull", "--no-edit"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+        time.sleep(interval)
+
+# ===============================
+#   Autorun Funktion
+# ===============================
+
+def autorun():
+    """Startet automatischen Git Sync im Hintergrund."""
+    if not os.environ.get("GIT_SYNC_ACTIVE"):
+        threading.Thread(target=git_pull_loop, args=(15,), daemon=True).start()
+        os.environ["GIT_SYNC_ACTIVE"] = "1"
+
+    # Wenn Dateien geändert werden, automatisch committen/pushen
+    watcher_thread = threading.Thread(target=file_watcher, daemon=True)
+    watcher_thread.start()
+
+def file_watcher():
+    """Überwacht Änderungen an Dateien und pusht sie automatisch."""
+    last_snapshot = snapshot_dir(".")
+    while True:
+        time.sleep(5)
+        new_snapshot = snapshot_dir(".")
+        if new_snapshot != last_snapshot:
+            last_snapshot = new_snapshot
+            git_commit_push()
+
+def snapshot_dir(path):
+    """Erstellt einen einfachen Hash-Snapshot des Verzeichniszustands."""
+    snapshot = {}
+    for root, _, files in os.walk(path):
+        for f in files:
+            if ".git" in root:
+                continue
+            file_path = os.path.join(root, f)
+            try:
+                snapshot[file_path] = os.path.getmtime(file_path)
+            except Exception:
+                pass
+    return snapshot
+
+# ===============================
+#   Main Entry
+# ===============================
+
+
 
 def show_theme_selector() -> None:
     """Ermöglicht Auswahl und Speicherung des Themes."""
@@ -659,3 +729,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+    autorun()
