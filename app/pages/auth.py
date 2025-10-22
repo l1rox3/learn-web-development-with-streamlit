@@ -4,7 +4,7 @@ import hashlib
 import secrets
 from enum import Enum
 from datetime import datetime, timedelta
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional, Dict, Tuple, List
 
 # ---------------------- KONSTANTEN ----------------------
@@ -79,7 +79,6 @@ class AuthManager:
                 words = []
                 for line in f:
                     line = line.strip().lower()
-                    # Ignoriere leere Zeilen und Kommentare
                     if line and not line.startswith("#"):
                         words.append(line)
                 print(f"Info: {len(words)} verbotene Namen geladen")
@@ -92,27 +91,21 @@ class AuthManager:
         """Prüft ob der Benutzername erlaubt ist"""
         username_lower = username.lower().strip()
         
-        # Leerer Name
         if not username_lower:
             return False, "Benutzername darf nicht leer sein"
         
-        # Zu kurz
         if len(username_lower) < 3:
             return False, "Benutzername muss mindestens 3 Zeichen lang sein"
         
-        # Zu lang
         if len(username_lower) > 20:
             return False, "Benutzername darf maximal 20 Zeichen lang sein"
         
-        # Nur erlaubte Zeichen (Buchstaben, Zahlen, Unterstrich, Bindestrich)
         if not all(c.isalnum() or c in ['_', '-'] for c in username_lower):
             return False, "Benutzername darf nur Buchstaben, Zahlen, _ und - enthalten"
         
-        # Bad Words Check
         if username_lower in self.bad_words:
             return False, "Dieser Benutzername ist nicht erlaubt"
         
-        # Teilstring-Check (optional, falls "admin123" auch blockiert werden soll)
         for bad_word in self.bad_words:
             if bad_word in username_lower and len(bad_word) > 3:
                 return False, f"Benutzername darf '{bad_word}' nicht enthalten"
@@ -130,7 +123,6 @@ class AuthManager:
     def verify_password(self, password: str, user: User) -> bool:
         """Verify a password against stored hash"""
         if not user.salt:
-            # Fallback für alte Passwörter ohne Salt
             return self.hash_password_simple(password) == user.password_hash
         pw_hash, _ = self.hash_password(password, user.salt)
         return pw_hash == user.password_hash
@@ -219,7 +211,6 @@ class AuthManager:
             print(f"Warning: Kein Passwort für Benutzer '{username}' - überspringe")
             return None
         
-        # Role
         role = UserRole.USER
         try:
             if "role" in udata:
@@ -235,12 +226,10 @@ class AuthManager:
         except (ValueError, KeyError, TypeError):
             role = UserRole.USER
         
-        # Active
         active = udata.get("active", True)
         if not isinstance(active, bool):
             active = True
         
-        # Timestamps
         created_at = datetime.now()
         if "created_at" in udata and udata["created_at"]:
             try:
@@ -255,7 +244,6 @@ class AuthManager:
             except:
                 pass
         
-        # Security
         using_default = udata.get("using_default", True)
         salt = udata.get("salt", "")
         failed_attempts = udata.get("failed_attempts", 0)
@@ -319,7 +307,6 @@ class AuthManager:
     # ---------- Login ----------
     def login(self, username: str, password: str) -> dict:
         """Login a user or auto-register with default password"""
-        # Username validieren
         allowed, message = self.is_username_allowed(username)
         if not allowed:
             return {
@@ -329,7 +316,6 @@ class AuthManager:
                 "using_default": False
             }
         
-        # Neuer Benutzer - automatisch registrieren mit DEFAULT_PASSWORD
         if username not in self.users:
             if password != DEFAULT_PASSWORD:
                 return {
@@ -358,10 +344,8 @@ class AuthManager:
                 "role": UserRole.USER
             }
 
-        # Bestehender Benutzer
         user = self.users[username]
         
-        # Check: Account gesperrt?
         if user.is_locked():
             remaining = user.get_lockout_remaining()
             if remaining:
@@ -373,7 +357,6 @@ class AuthManager:
                     "using_default": False
                 }
         
-        # Check: Account aktiv?
         if not user.active:
             return {
                 "success": False,
@@ -382,7 +365,6 @@ class AuthManager:
                 "using_default": False
             }
         
-        # Check: Passwort korrekt?
         if not self.verify_password(password, user):
             self.handle_failed_login(user)
             attempts_left = self.max_failed_attempts - user.failed_attempts
@@ -402,7 +384,6 @@ class AuthManager:
                 "using_default": False
             }
 
-        # Erfolgreiche Anmeldung
         self.reset_failed_attempts(user)
         user.last_login = datetime.now()
         self.save_users()
@@ -418,7 +399,6 @@ class AuthManager:
     # ---------- Register ----------
     def register(self, username: str, password: str) -> dict:
         """Register a new user"""
-        # Username validieren
         allowed, message = self.is_username_allowed(username)
         if not allowed:
             return {
@@ -474,53 +454,72 @@ class AuthManager:
         result = self.login(username, password)
         return result["success"], result["message"], result.get("using_default", False)
     
-    # ---------- Session Validation ----------
+    # ========== ⚠️ KRITISCH: SESSION VALIDATION (BEI JEDEM SEITENAUFRUF!) ==========
     def validate_session(self, username: str) -> Tuple[bool, str, Optional[UserRole]]:
         """
-        Überprüft bei jedem Request ob der Benutzer noch aktiv/entsperrt ist.
+        ⚠️ WICHTIG: MUSS bei JEDEM Seitenaufruf/Button-Klick aufgerufen werden!
+        
+        Überprüft ob der Benutzer noch aktiv/entsperrt ist.
+        Lädt IMMER die aktuellsten Daten von der Festplatte!
         
         Returns:
             (is_valid, message, role)
-            - is_valid: True wenn Session gültig, False wenn ausloggen
+            - is_valid: True = weitermachen, False = SOFORT RAUSWERFEN
             - message: Grund für Logout oder "OK"
             - role: UserRole wenn gültig, None wenn nicht
         """
-        # Benutzer existiert nicht mehr
-        if username not in self.users:
-            return False, "Benutzer wurde gelöscht", None
+        # ⚠️ WICHTIG: Lade FRISCHE Daten von Festplatte (falls Admin was geändert hat)
+        fresh_users = self.load_users()
         
-        # Lade aktuellste Daten (falls von anderem Admin geändert)
-        self.users = self.load_users()
+        # Check 1: Benutzer existiert nicht (mehr)?
+        if username not in fresh_users:
+            print(f"🔒 SECURITY: Benutzer '{username}' existiert nicht mehr - kicke raus!")
+            return False, "Dein Account wurde gelöscht", None
         
-        if username not in self.users:
-            return False, "Benutzer wurde gelöscht", None
+        user = fresh_users[username]
         
-        user = self.users[username]
-        
-        # Check: Benutzer wurde deaktiviert
+        # Check 2: Benutzer wurde deaktiviert?
         if not user.active:
+            print(f"🔒 SECURITY: Benutzer '{username}' wurde deaktiviert - kicke raus!")
             return False, "Dein Account wurde deaktiviert", None
         
-        # Check: Benutzer wurde gesperrt
+        # Check 3: Benutzer wurde gesperrt?
         if user.is_locked():
             remaining = user.get_lockout_remaining()
             if remaining:
                 minutes = int(remaining.total_seconds() / 60)
-                return False, f"Dein Account wurde gesperrt ({minutes} Min. verbleibend)", None
+                print(f"🔒 SECURITY: Benutzer '{username}' ist gesperrt - kicke raus!")
+                return False, f"Dein Account wurde gesperrt (noch {minutes} Min.)", None
         
-        # Alles OK
+        # ✅ Alles OK - User darf weitermachen
+        # Aktualisiere self.users mit frischen Daten
+        self.users = fresh_users
         return True, "OK", user.role
     
     def check_user_status(self, username: str) -> dict:
         """
-        Kompakte Version für API-Calls.
+        ⚠️ DIESE FUNKTION IN STREAMLIT BEI JEDEM SEITENAUFRUF AUFRUFEN!
+        
+        Kompakte Version für Streamlit-Integration.
+        
+        Usage in Streamlit:
+        ```python
+        if "username" in st.session_state:
+            status = auth_manager.check_user_status(st.session_state.username)
+            if status["should_logout"]:
+                st.error(status["message"])
+                # Session State löschen
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+                st.rerun()
+        ```
         
         Returns:
             {
-                "valid": bool,
-                "message": str,
-                "role": str or None,
-                "should_logout": bool
+                "valid": bool,              # True = alles OK, False = RAUSWERFEN
+                "message": str,             # Fehlermeldung oder "OK"
+                "role": str or None,        # "admin" oder "user"
+                "should_logout": bool       # True = SOFORT ausloggen!
             }
         """
         is_valid, message, role = self.validate_session(username)
@@ -557,7 +556,8 @@ class AuthManager:
         return True, f"Admin-Benutzer '{username}' wurde erstellt"
     
     def get_all_users(self) -> Dict[str, User]:
-        """Get all users"""
+        """Get all users - lädt frische Daten"""
+        self.users = self.load_users()
         return self.users
     
     def delete_user(self, username: str) -> Tuple[bool, str]:
@@ -573,6 +573,9 @@ class AuthManager:
     
     def toggle_user_active(self, username: str) -> Tuple[bool, str]:
         """Activate or deactivate a user"""
+        # Lade frische Daten
+        self.users = self.load_users()
+        
         if username not in self.users:
             return False, "Benutzer nicht gefunden"
         
@@ -586,6 +589,8 @@ class AuthManager:
     
     def promote_to_admin(self, username: str) -> Tuple[bool, str]:
         """Promote a user to admin"""
+        self.users = self.load_users()
+        
         if username not in self.users:
             return False, "Benutzer nicht gefunden"
         
@@ -601,6 +606,8 @@ class AuthManager:
     
     def demote_from_admin(self, username: str) -> Tuple[bool, str]:
         """Demote an admin to regular user"""
+        self.users = self.load_users()
+        
         if username not in self.users:
             return False, "Benutzer nicht gefunden"
         
@@ -616,6 +623,8 @@ class AuthManager:
     
     def unlock_user(self, username: str) -> Tuple[bool, str]:
         """Entsperrt einen gesperrten Benutzer (für Admins)"""
+        self.users = self.load_users()
+        
         if username not in self.users:
             return False, "Benutzer nicht gefunden"
         
