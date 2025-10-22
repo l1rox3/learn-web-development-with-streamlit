@@ -20,6 +20,7 @@ import streamlit as st
 
 # Lokale Module (wie in deinem Projekt)
 from pages.auth import AuthManager, UserRole, DEFAULT_PASSWORD
+auth_manager = AuthManager()
 
 # ⚠️ WICHTIG: Session-Validierung bei JEDEM Seitenaufruf!
 if "username" in st.session_state:
