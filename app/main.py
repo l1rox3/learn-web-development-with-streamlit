@@ -558,7 +558,7 @@ def render_footer():
     <div class="footer">
         <p class="footer-text">
             Created by <a href="#" class="footer-link">l1rox3</a> • 2025 
-            | Made  
+            | Made for  
             | <span style="color: {t['accent']};">Quiz App v2.0</span>
         </p>
     </div>
