@@ -557,7 +557,7 @@ def show_user_management(current_admin):
     
     st.markdown("<h3 style='margin-top: 2rem; margin-bottom: 1rem;'>Benutzer</h3>", unsafe_allow_html=True)
     st.button("Aktualisieren", on_click=st.rerun)
-    st.butten("zurück zum main", on_click=lambda: st.switch_page("main.py"))
+    st.button("zurück zum main", on_click=lambda: st.switch_page("main.py"))
     # Bestehende Benutzer
     users = auth_manager.load_users()
     
