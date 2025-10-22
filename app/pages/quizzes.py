@@ -1,168 +1,182 @@
 import streamlit as st
 import json
 import os
+import random
 import time
 from datetime import datetime
-from random import shuffle
+from pages.auth import AuthManager
 
-# ==============================
-#   KONFIGURATION
-# ==============================
-QUIZ_DIR = "./data/quizzes"
+# =========================================================
+# KONFIGURATION
+# =========================================================
 ANSWERS_DIR = "./data/answers"
+QUIZZES_DIR = "./data/quizzes"
 
-# ==============================
-#   QUIZ LADE-FUNKTIONEN
-# ==============================
+st.set_page_config(page_title="Quiz", page_icon="🧩", layout="wide")
+
+# =========================================================
+# INITIALISIERUNG
+# =========================================================
+if "auth_manager" not in st.session_state:
+    st.session_state.auth_manager = AuthManager()
+auth_manager = st.session_state.auth_manager
+
+if "username" not in st.session_state or not st.session_state.username:
+    st.warning("Bitte melde dich zuerst an, um ein Quiz zu starten.")
+    st.stop()
+
+username = st.session_state.username
+
+# =========================================================
+# FUNKTIONEN
+# =========================================================
+
 def load_quizzes():
-    if not os.path.exists(QUIZ_DIR):
-        os.makedirs(QUIZ_DIR)
+    """Lädt verfügbare Quizze aus JSON-Dateien."""
+    if not os.path.exists(QUIZZES_DIR):
+        os.makedirs(QUIZZES_DIR)
+        return []
+    files = [f for f in os.listdir(QUIZZES_DIR) if f.endswith(".json")]
     quizzes = []
-    for file in os.listdir(QUIZ_DIR):
-        if file.endswith(".json"):
-            with open(os.path.join(QUIZ_DIR, file), "r", encoding="utf-8") as f:
-                data = json.load(f)
+    for f in files:
+        with open(os.path.join(QUIZZES_DIR, f), "r", encoding="utf-8") as file:
+            try:
+                data = json.load(file)
                 quizzes.append(data)
+            except Exception as e:
+                print(f"Fehler in {f}: {e}")
     return quizzes
 
-def load_user_answers(username):
+
+def save_result(username, quiz_name, correct, total, time_seconds):
+    """Speichert die Ergebnisse des Benutzers."""
     os.makedirs(ANSWERS_DIR, exist_ok=True)
-    filepath = os.path.join(ANSWERS_DIR, f"{username}.json")
-    if os.path.exists(filepath):
-        with open(filepath, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"quizzes": []}
+    path = os.path.join(ANSWERS_DIR, f"{username}.json")
+    data = {"quizzes": []}
 
-def save_user_answers(username, quiz_data):
-    os.makedirs(ANSWERS_DIR, exist_ok=True)
-    filepath = os.path.join(ANSWERS_DIR, f"{username}.json")
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(quiz_data, f, indent=2, ensure_ascii=False)
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            try:
+                data = json.load(f)
+            except:
+                pass
 
-# ==============================
-#   QUIZ SEITE
-# ==============================
-def show_quiz():
-    st.markdown("""
-        <style>
-        .quiz-card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 1.5rem;
-            padding: 1.2rem;
-            margin: 0.8rem 0;
-            text-align: center;
-            transition: all 0.25s ease-in-out;
-            cursor: pointer;
-            border: 2px solid rgba(255,255,255,0.1);
-        }
-        .quiz-card:hover {
-            background: rgba(255,255,255,0.15);
-            transform: scale(1.03);
-            border-color: rgba(255,255,255,0.4);
-        }
-        .quiz-card-selected {
-            background: rgba(0,200,100,0.2);
-            border-color: rgba(0,255,150,0.8);
-            transform: scale(1.04);
-        }
-        .question-box {
-            background: linear-gradient(135deg, #111, #222);
-            border-radius: 2rem;
-            padding: 2rem;
-            box-shadow: 0 0 25px rgba(0,0,0,0.3);
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    if "quizzes" not in data:
+        data["quizzes"] = []
 
-    if "username" not in st.session_state or not st.session_state.username.strip():
-        st.warning("Bitte zuerst anmelden!")
-        st.stop()
+    data["quizzes"].append({
+        "quiz_name": quiz_name,
+        "correct": correct,
+        "total": total,
+        "time_seconds": round(time_seconds, 2),
+        "timestamp": datetime.now().isoformat()
+    })
 
-    username = st.session_state.username
-    quizzes = load_quizzes()
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
-    if not quizzes:
-        st.info("📂 Noch keine Quizze vorhanden.")
-        return
 
-    # Quiz-Auswahl
-    quiz_names = [quiz["title"] for quiz in quizzes]
-    selected_quiz = st.selectbox("🎯 Wähle dein Quiz", quiz_names)
-    current_quiz = next(q for q in quizzes if q["title"] == selected_quiz)
+def render_quiz(quiz):
+    """Zeigt das Quiz interaktiv an."""
+    st.markdown(f"<h1 style='text-align:center;'>{quiz['title']}</h1>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
 
-    # Quiz starten
-    if st.button("🚀 Quiz starten", use_container_width=True):
-        st.session_state.current_quiz = current_quiz
-        st.session_state.quiz_index = 0
-        st.session_state.quiz_answers = []
-        st.session_state.quiz_start_time = time.time()
-        st.rerun()
+    questions = quiz["questions"]
+    random.shuffle(questions)
 
-    # Wenn Quiz läuft
-    if "current_quiz" in st.session_state:
-        quiz = st.session_state.current_quiz
-        index = st.session_state.quiz_index
-        total_questions = len(quiz["questions"])
-        current_question = quiz["questions"][index]
+    score = 0
+    start_time = time.time()
 
-        st.markdown(f"### Frage {index + 1} / {total_questions}")
-        st.markdown(f"<div class='question-box'><h3>{current_question['question']}</h3></div>", unsafe_allow_html=True)
-        
-        options = current_question["options"]
-        shuffle(options)
+    for i, q in enumerate(questions, start=1):
+        st.markdown(f"<h3>{i}. {q['question']}</h3>", unsafe_allow_html=True)
 
-        selected = st.session_state.get("selected_answer", None)
+        # Große, klickbare Antwortboxen
         cols = st.columns(2)
+        random.shuffle(q["options"])
+        selected = None
 
-        for i, option in enumerate(options):
-            col = cols[i % 2]
+        for idx, opt in enumerate(q["options"]):
+            col = cols[idx % 2]
             with col:
-                if st.button(option, key=f"opt_{i}", use_container_width=True):
-                    st.session_state.selected_answer = option
-                    st.session_state.quiz_answers.append({
-                        "question": current_question["question"],
-                        "selected": option,
-                        "correct": current_question["answer"]
-                    })
-                    if index + 1 < total_questions:
-                        st.session_state.quiz_index += 1
-                    else:
-                        end_time = time.time()
-                        duration = round(end_time - st.session_state.quiz_start_time, 2)
-                        correct_count = sum(1 for a in st.session_state.quiz_answers if a["selected"] == a["correct"])
-                        
-                        user_data = load_user_answers(username)
-                        user_data["quizzes"].append({
-                            "quiz_name": quiz["title"],
-                            "correct": correct_count,
-                            "total": total_questions,
-                            "time_seconds": duration,
-                            "timestamp": datetime.now().isoformat()
-                        })
-                        save_user_answers(username, user_data)
-
-                        st.session_state.last_result = {
-                            "correct": correct_count,
-                            "total": total_questions,
-                            "time_seconds": duration
-                        }
-                        # Quiz beenden
-                        for k in ["current_quiz", "quiz_index", "quiz_answers", "quiz_start_time"]:
-                            st.session_state.pop(k, None)
+                key = f"{i}-{opt}"
+                # große Karte
+                if st.button(opt, key=key, use_container_width=True):
+                    selected = opt
+                    if "selected_answer" not in st.session_state:
+                        st.session_state.selected_answer = {}
+                    st.session_state.selected_answer[i] = opt
                     st.rerun()
 
-    # Ergebnisse anzeigen
-    if "last_result" in st.session_state:
-        res = st.session_state.last_result
-        st.markdown("""
-        <div style='text-align:center;padding:2rem;background:linear-gradient(135deg,#222,#111);
-        border-radius:2rem;margin-top:2rem;'>
-            <h2>🎉 Quiz beendet!</h2>
-            <h3>{}/{} richtig</h3>
-            <p>⏱️ Dauer: {} Sekunden</p>
-        </div>
-        """.format(res["correct"], res["total"], res["time_seconds"]), unsafe_allow_html=True)
+        # Wenn Antwort schon gewählt
+        if "selected_answer" in st.session_state and i in st.session_state.selected_answer:
+            chosen = st.session_state.selected_answer[i]
+            correct = q["answer"]
+            if chosen == correct:
+                st.success(f"✅ {chosen} – Richtig!")
+                score += 1
+            else:
+                st.error(f"❌ {chosen} – Falsch! Richtige Antwort: **{correct}**")
 
-        if st.button("🔁 Nochmal spielen", use_container_width=True):
-            del st.session_state["last_result"]
-            st.rerun()
+        st.markdown("<hr>", unsafe_allow_html=True)
+        time.sleep(0.05)
+
+    end_time = time.time()
+    total_time = end_time - start_time
+
+    st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align:center;'>Ergebnis</h2>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div style='text-align:center; font-size: 1.5rem; background: #111; padding: 1rem; border-radius: 1rem;'>"
+        f"Punkte: <b>{score}</b> / {len(questions)}<br>"
+        f"Zeit: <b>{round(total_time, 1)} Sekunden</b>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    save_result(username, quiz["title"], score, len(questions), total_time)
+
+
+# =========================================================
+# HAUPTBEREICH
+# =========================================================
+
+st.markdown("""
+<style>
+    div[data-testid="stButton"] button {
+        font-size: 1.2rem !important;
+        padding: 1.2rem !important;
+        border-radius: 1rem !important;
+        margin: 0.5rem 0 !important;
+        transition: 0.2s ease-in-out;
+    }
+    div[data-testid="stButton"] button:hover {
+        transform: scale(1.02);
+        background: linear-gradient(90deg, #1e90ff, #00bfff);
+        color: white !important;
+        box-shadow: 0 0 15px rgba(30,144,255,0.5);
+    }
+    h1, h2, h3 {
+        text-align: center !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.title("🎯 Wähle ein Quiz")
+
+quizzes = load_quizzes()
+if not quizzes:
+    st.warning("Noch keine Quizze gefunden. Lege im Ordner `/data/quizzes` JSON-Dateien an.")
+    st.stop()
+
+quiz_titles = [q["title"] for q in quizzes]
+selected_quiz = st.selectbox("Quiz auswählen:", quiz_titles, index=0)
+
+quiz = next(q for q in quizzes if q["title"] == selected_quiz)
+
+if st.button("🚀 Quiz starten", use_container_width=True, type="primary"):
+    st.session_state.selected_answer = {}
+    st.session_state.current_quiz = quiz
+    st.rerun()
+
+if "current_quiz" in st.session_state and st.session_state.current_quiz:
+    render_quiz(st.session_state.current_quiz)
