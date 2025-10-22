@@ -573,7 +573,7 @@ def show_login() -> None:
     st.markdown(f"""
     <div class="main-header">
         <h1 class="main-title">🎯 Quiz Dashboard</h1>
-        <p class="main-subtitle">Teste dein Wissen • Sammle Punkte • Werde Champion</p>
+        <p class="main-subtitle">Teste dein Wissen</p>
     </div>
     """, unsafe_allow_html=True)
 
