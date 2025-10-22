@@ -696,7 +696,7 @@ def show_leaderboard_page() -> None:
     with col2:
         st.markdown(f"""
         <div class="stats-card">
-            <div class="stats-label">🎮 Versuche</div>
+            <div class="stats-label">Versuche</div>
             <div class="stats-value">{total_attempts}</div>
         </div>
         """, unsafe_allow_html=True)
