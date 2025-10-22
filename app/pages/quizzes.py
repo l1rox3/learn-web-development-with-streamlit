@@ -7,6 +7,7 @@ import json
 import random
 from datetime import datetime
 import time
+
 auth_manager = AuthManager()
 # ⚠️ WICHTIG: Session-Validierung bei JEDEM Seitenaufruf!
 if "username" in st.session_state:
