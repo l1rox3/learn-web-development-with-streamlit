@@ -263,12 +263,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================================
-# QUIZ DATEN - Hinduismus (gleich geblieben)
+# QUIZ DATEN - Hinduismus
 # =========================================================
 HINDUISMUS_QUIZ = {
     "title": "Kleidung und Tiere im Hinduismus",
     "questions": [
-        # ... (gleiche Fragen wie vorher)
         {
             "question": "Was ist ein Sari?",
             "options": [
@@ -522,7 +521,7 @@ def initialize_quiz_session():
     st.session_state.quiz_start_time = time.time()
     st.session_state.quiz_run_id = run_id
     st.session_state.show_feedback = False
-    st.session_state.answered_questions = set()  # Neu: Track beantwortete Fragen
+    st.session_state.answered_questions = set()  # KORREKTUR: Hier wird answered_questions initialisiert
 
 
 def render_progress_bar(current, total):
@@ -548,6 +547,10 @@ def render_current_question():
     if idx >= len(questions):
         render_quiz_results()
         return
+    
+    # KORREKTUR: Sicherstellen, dass answered_questions existiert
+    if 'answered_questions' not in st.session_state:
+        st.session_state.answered_questions = set()
     
     question = questions[idx]
     total = len(questions)
