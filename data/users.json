@@ -21,17 +21,6 @@
     "failed_attempts": 0,
     "locked_until": null
   },
-  "hhhh": {
-    "password_hash": "0acb92776bcaa5ea2de020b1d4e7492ad47664cfd0265b5bd5d409c8e0ff46e6",
-    "role": "user",
-    "active": false,
-    "created_at": "2025-10-15T18:52:54.641825",
-    "last_login": null,
-    "using_default": false,
-    "salt": "39ea8b900be87d5be8baaa1aa78437c2",
-    "failed_attempts": 0,
-    "locked_until": null
-  },
   "lutz": {
     "password_hash": "be4884076d9d63c401a462aa7d06827966b740facea4d02ee476f4b941becbd3",
     "role": "user",
