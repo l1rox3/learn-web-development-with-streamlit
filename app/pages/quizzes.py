@@ -40,225 +40,235 @@ if "username" not in st.session_state or not st.session_state.username:
 username = st.session_state.username
 
 # =========================================================
-# CUSTOM CSS
+# CUSTOM CSS - SCHLICHTES SCHWARZ-WEISS DESIGN
 # =========================================================
 st.markdown("""
 <style>
     .main {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        background-color: #000000;
+        color: #ffffff;
     }
     
     .quiz-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-color: #111111;
         padding: 2rem;
-        border-radius: 20px;
+        border-radius: 10px;
         text-align: center;
         margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        border: 1px solid #333333;
     }
     
     .quiz-title {
         font-size: 2.5rem;
-        font-weight: 800;
+        font-weight: 700;
         color: white;
         margin: 0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
     .progress-container {
-        background: rgba(255,255,255,0.1);
-        border-radius: 15px;
+        background: #111111;
+        border-radius: 8px;
         padding: 1.5rem;
         margin-bottom: 2rem;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
+        border: 1px solid #333333;
     }
     
     .progress-bar {
-        height: 12px;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        border-radius: 10px;
+        height: 8px;
+        background: #ffffff;
+        border-radius: 4px;
         transition: width 0.3s ease;
-        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.5);
     }
     
     .progress-text {
         color: white;
-        font-size: 1.1rem;
+        font-size: 1rem;
         margin-top: 0.5rem;
-        font-weight: 600;
+        font-weight: 500;
     }
     
     .question-card {
-        background: rgba(255,255,255,0.05);
-        border-radius: 20px;
-        padding: 2.5rem;
+        background: #111111;
+        border-radius: 10px;
+        padding: 2rem;
         margin: 2rem 0;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        border: 1px solid #333333;
     }
     
     .question-number {
-        color: #667eea;
-        font-size: 1rem;
-        font-weight: 700;
+        color: #888888;
+        font-size: 0.9rem;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 2px;
+        letter-spacing: 1px;
         margin-bottom: 1rem;
     }
     
     .question-text {
         color: white;
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         font-weight: 600;
         line-height: 1.4;
         margin-bottom: 2rem;
     }
     
     div[data-testid="stButton"] button {
-        font-size: 1.1rem !important;
-        padding: 1.5rem 2rem !important;
-        border-radius: 15px !important;
-        margin: 0.5rem 0 !important;
-        transition: all 0.3s ease !important;
-        background: rgba(255,255,255,0.08) !important;
-        border: 2px solid rgba(255,255,255,0.2) !important;
+        font-size: 1rem !important;
+        padding: 1.2rem 1.5rem !important;
+        border-radius: 8px !important;
+        margin: 0.3rem 0 !important;
+        transition: all 0.2s ease !important;
+        background: #111111 !important;
+        border: 1px solid #333333 !important;
         color: white !important;
-        font-weight: 600 !important;
+        font-weight: 500 !important;
         text-align: left !important;
     }
     
     div[data-testid="stButton"] button:hover {
-        transform: translateY(-3px) !important;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        border-color: #667eea !important;
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4) !important;
+        background: #222222 !important;
+        border-color: #555555 !important;
+    }
+    
+    div[data-testid="stButton"] button:disabled {
+        background: #1a1a1a !important;
+        border-color: #444444 !important;
+        color: #666666 !important;
     }
     
     .result-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 25px;
-        padding: 3rem;
+        background: #111111;
+        border-radius: 10px;
+        padding: 2.5rem;
         text-align: center;
-        margin: 3rem 0;
-        box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+        margin: 2rem 0;
+        border: 1px solid #333333;
     }
     
     .result-score {
-        font-size: 4rem;
-        font-weight: 800;
+        font-size: 3rem;
+        font-weight: 700;
         color: white;
         margin: 1rem 0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
     .result-text {
-        font-size: 1.3rem;
-        color: rgba(255,255,255,0.9);
+        font-size: 1.1rem;
+        color: #cccccc;
         margin: 0.5rem 0;
     }
     
     .run-id-badge {
-        background: rgba(255,255,255,0.2);
+        background: #222222;
         padding: 0.5rem 1rem;
-        border-radius: 10px;
-        color: white;
-        font-size: 0.9rem;
+        border-radius: 6px;
+        color: #888888;
+        font-size: 0.8rem;
         display: inline-block;
         margin-top: 1rem;
         font-family: monospace;
+        border: 1px solid #333333;
     }
     
     .feedback-correct {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        padding: 1.5rem;
-        border-radius: 15px;
-        color: white;
-        font-size: 1.2rem;
+        background: #1a2a1a;
+        padding: 1.2rem;
+        border-radius: 8px;
+        color: #4CAF50;
+        font-size: 1.1rem;
         margin: 1rem 0;
         font-weight: 600;
-        box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+        border: 1px solid #2d4a2d;
         animation: slideIn 0.3s ease;
     }
     
     .feedback-wrong {
-        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        padding: 1.5rem;
-        border-radius: 15px;
-        color: white;
-        font-size: 1.2rem;
+        background: #2a1a1a;
+        padding: 1.2rem;
+        border-radius: 8px;
+        color: #f44336;
+        font-size: 1.1rem;
         margin: 1rem 0;
         font-weight: 600;
-        box-shadow: 0 5px 20px rgba(235, 51, 73, 0.4);
+        border: 1px solid #4a2d2d;
         animation: slideIn 0.3s ease;
     }
     
     @keyframes slideIn {
-        from { opacity: 0; transform: translateY(-20px); }
+        from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
     }
     
     .timer-display {
-        background: rgba(255,255,255,0.1);
-        padding: 1rem 2rem;
-        border-radius: 15px;
+        background: #111111;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
         color: white;
-        font-size: 1.3rem;
-        font-weight: 700;
+        font-size: 1.1rem;
+        font-weight: 600;
         text-align: center;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
+        border: 1px solid #333333;
+        margin-bottom: 1rem;
     }
     
     .leaderboard-card {
-        background: rgba(255,255,255,0.05);
-        border-radius: 20px;
-        padding: 2rem;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: #111111;
+        border-radius: 10px;
+        padding: 1.5rem;
+        border: 1px solid #333333;
         margin: 2rem 0;
     }
     
     .leaderboard-title {
         color: white;
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 700;
         margin-bottom: 1.5rem;
         text-align: center;
     }
     
     .leaderboard-entry {
-        background: rgba(255,255,255,0.08);
-        padding: 1rem 1.5rem;
-        border-radius: 10px;
-        margin: 0.5rem 0;
+        background: #1a1a1a;
+        padding: 1rem 1.2rem;
+        border-radius: 6px;
+        margin: 0.3rem 0;
         color: white;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid #333333;
     }
     
     .leaderboard-rank {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #667eea;
-        min-width: 50px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #ffffff;
+        min-width: 40px;
     }
     
     .gold { color: #FFD700; }
     .silver { color: #C0C0C0; }
     .bronze { color: #CD7F32; }
+    
+    .option-correct {
+        border-left: 4px solid #4CAF50 !important;
+        background: #1a2a1a !important;
+    }
+    
+    .option-wrong {
+        border-left: 4px solid #f44336 !important;
+        background: #2a1a1a !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================================================
-# QUIZ DATEN - Hinduismus
+# QUIZ DATEN - Hinduismus (gleich geblieben)
 # =========================================================
 HINDUISMUS_QUIZ = {
     "title": "Kleidung und Tiere im Hinduismus",
     "questions": [
+        # ... (gleiche Fragen wie vorher)
         {
             "question": "Was ist ein Sari?",
             "options": [
@@ -512,7 +522,7 @@ def initialize_quiz_session():
     st.session_state.quiz_start_time = time.time()
     st.session_state.quiz_run_id = run_id
     st.session_state.show_feedback = False
-    st.session_state.answer_locked = False
+    st.session_state.answered_questions = set()  # Neu: Track beantwortete Fragen
 
 
 def render_progress_bar(current, total):
@@ -520,7 +530,7 @@ def render_progress_bar(current, total):
     progress = (current / total) * 100
     st.markdown(f"""
     <div class="progress-container">
-        <div style="background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden;">
+        <div style="background: #333333; border-radius: 4px; overflow: hidden;">
             <div class="progress-bar" style="width: {progress}%;"></div>
         </div>
         <div class="progress-text">
@@ -531,17 +541,13 @@ def render_progress_bar(current, total):
 
 
 def render_current_question():
-    """Zeigt die aktuelle Frage an mit automatischem Weiterklick."""
+    """Zeigt die aktuelle Frage an."""
     idx = st.session_state.current_question_idx
     questions = st.session_state.quiz_questions
     
     if idx >= len(questions):
         render_quiz_results()
         return
-    
-    # Initialisiere answer_locked falls nicht vorhanden
-    if 'answer_locked' not in st.session_state:
-        st.session_state.answer_locked = False
     
     question = questions[idx]
     total = len(questions)
@@ -554,6 +560,9 @@ def render_current_question():
         <div class="question-text">{question['question']}</div>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Prüfe ob diese Frage bereits beantwortet wurde
+    question_already_answered = idx in st.session_state.answered_questions
     
     if st.session_state.show_feedback:
         answer = st.session_state.quiz_answers[-1]
@@ -572,28 +581,48 @@ def render_current_question():
             </div>
             """, unsafe_allow_html=True)
         
-        # Sofort zur nächsten Frage nach kurzer Anzeige
-        time.sleep(1.5)
-        st.session_state.current_question_idx += 1
-        st.session_state.show_feedback = False
-        st.session_state.answer_locked = False
-        st.rerun()
+        # Automatischer Übergang zur nächsten Frage
+        if st.button("➡️ Nächste Frage", use_container_width=True, type="primary"):
+            st.session_state.current_question_idx += 1
+            st.session_state.show_feedback = False
+            st.rerun()
     
     else:
         options = question["options"].copy()
-        random.shuffle(options)
         
-        st.markdown("<div style='margin: 2rem 0;'>", unsafe_allow_html=True)
-        cols = st.columns(2)
-        
-        for i, option in enumerate(options):
-            col = cols[i % 2]
-            with col:
-                # Button nur anklickbar wenn Antwort noch nicht gegeben wurde
-                if st.button(f"🔹 {option}", key=f"opt_{idx}_{i}", use_container_width=True, disabled=st.session_state.answer_locked):
-                    if not st.session_state.answer_locked:
-                        st.session_state.answer_locked = True
-                        
+        # Wenn Frage bereits beantwortet, zeige die korrekte Antwort an
+        if question_already_answered:
+            st.info("ℹ️ Diese Frage hast du bereits beantwortet.")
+            
+            # Finde die gegebene Antwort für diese Frage
+            user_answer = None
+            for answer in st.session_state.quiz_answers:
+                if answer["question"] == question["question"]:
+                    user_answer = answer
+                    break
+            
+            if user_answer:
+                st.markdown(f"""
+                <div style="margin: 1rem 0; padding: 1rem; background: #1a1a1a; border-radius: 8px; border: 1px solid #333333;">
+                    <strong>Deine Antwort:</strong> {user_answer['selected']}<br>
+                    <strong>Korrekte Antwort:</strong> {user_answer['correct']}<br>
+                    <strong>Status:</strong> {"✅ Richtig" if user_answer['is_correct'] else "❌ Falsch"}
+                </div>
+                """, unsafe_allow_html=True)
+            
+            if st.button("➡️ Nächste Frage", use_container_width=True, type="primary"):
+                st.session_state.current_question_idx += 1
+                st.rerun()
+                
+        else:
+            # Frage noch nicht beantwortet - zeige Buttons an
+            st.markdown("<div style='margin: 2rem 0;'>", unsafe_allow_html=True)
+            cols = st.columns(2)
+            
+            for i, option in enumerate(options):
+                col = cols[i % 2]
+                with col:
+                    if st.button(f"{option}", key=f"opt_{idx}_{i}", use_container_width=True):
                         is_correct = option == question["answer"]
                         if is_correct:
                             st.session_state.quiz_score += 1
@@ -605,26 +634,28 @@ def render_current_question():
                             "is_correct": is_correct
                         })
                         
+                        # Markiere diese Frage als beantwortet
+                        st.session_state.answered_questions.add(idx)
                         st.session_state.show_feedback = True
                         st.rerun()
-        
-        st.markdown("</div>", unsafe_allow_html=True)
+            
+            st.markdown("</div>", unsafe_allow_html=True)
 
 
 def render_leaderboard():
     """Zeigt das Leaderboard mit allen Runs."""
     st.markdown('<div class="leaderboard-card">', unsafe_allow_html=True)
-    st.markdown('<div class="leaderboard-title">🏆 Leaderboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="leaderboard-title">🏆 Bestenliste</div>', unsafe_allow_html=True)
     
     all_results = load_all_results()
     
     if not all_results:
-        st.markdown('<p style="color: rgba(255,255,255,0.6); text-align: center;">Noch keine Ergebnisse vorhanden</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color: #666666; text-align: center;">Noch keine Ergebnisse vorhanden</p>', unsafe_allow_html=True)
     else:
         # Sortiere nach Prozentsatz (absteigend), dann nach Zeit (aufsteigend)
         all_results.sort(key=lambda x: (-x["percentage"], x["time_seconds"]))
         
-        for i, result in enumerate(all_results[:20], 1):  # Top 20
+        for i, result in enumerate(all_results[:10], 1):  # Top 10
             rank_class = ""
             rank_emoji = f"{i}."
             if i == 1:
@@ -645,18 +676,18 @@ def render_leaderboard():
                 <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
                     <span class="leaderboard-rank {rank_class}">{rank_emoji}</span>
                     <div style="flex: 1;">
-                        <div style="font-weight: 600; font-size: 1.1rem;">{result['username']}</div>
-                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">
-                            Run: {result['run_id']} | {result['quiz_name']}
+                        <div style="font-weight: 600; font-size: 1rem;">{result['username']}</div>
+                        <div style="font-size: 0.8rem; color: #666666;">
+                            {result['quiz_name']} • {result['run_id']}
                         </div>
                     </div>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 1.3rem; font-weight: 700; color: #667eea;">
+                    <div style="font-size: 1.1rem; font-weight: 700; color: #ffffff;">
                         {result['percentage']:.1f}%
                     </div>
-                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">
-                        {result['correct']}/{result['total']} | {time_min}:{time_sec:02d}
+                    <div style="font-size: 0.8rem; color: #666666;">
+                        {result['correct']}/{result['total']} • {time_min}:{time_sec:02d}
                     </div>
                 </div>
             </div>
@@ -687,30 +718,29 @@ def render_quiz_results():
     <div class="result-card">
         <h1 style="color: white; margin: 0;">🎉 Quiz abgeschlossen!</h1>
         <div class="result-score">{score} / {total}</div>
-        <div class="result-text">📊 Erfolgsquote: {percentage:.1f}%</div>
-        <div class="result-text">⏱️ Zeit: {int(time_taken // 60)}:{int(time_taken % 60):02d} Minuten</div>
-        <div class="run-id-badge">🆔 Run-ID: {run_id}</div>
+        <div class="result-text">Erfolgsquote: {percentage:.1f}%</div>
+        <div class="result-text">Zeit: {int(time_taken // 60)}:{int(time_taken % 60):02d} Minuten</div>
+        <div class="run-id-badge">Run-ID: {run_id}</div>
     </div>
     """, unsafe_allow_html=True)
     
     if percentage == 100:
-        st.balloons()
         st.success("🌟 Perfekt! Du hast alle Fragen richtig beantwortet!")
     elif percentage >= 80:
         st.success("👏 Ausgezeichnet! Sehr gute Leistung!")
     elif percentage >= 60:
-        st.info("👍 Gut gemacht! Mit etwas Übung wird es noch besser!")
+        st.info("👍 Gut gemacht!")
     else:
-        st.warning("💪 Nicht aufgeben! Versuche es noch einmal!")
+        st.warning("💪 Übe weiter!")
     
     with st.expander("📋 Detaillierte Antworten anzeigen"):
         for i, answer in enumerate(st.session_state.quiz_answers, 1):
             status = "✅ Richtig" if answer["is_correct"] else "❌ Falsch"
             st.markdown(f"""
             **Frage {i}:** {answer['question']}  
-            {status}  
-            - Deine Antwort: {answer['selected']}  
-            - Richtige Antwort: {answer['correct']}
+            **{status}**  
+            • Deine Antwort: {answer['selected']}  
+            • Richtige Antwort: {answer['correct']}
             """)
             st.divider()
     
@@ -728,7 +758,7 @@ def render_quiz_results():
         if st.button("🏠 Zurück zur Startseite", use_container_width=True):
             for key in ['quiz_active', 'quiz_questions', 'current_question_idx', 
                        'quiz_score', 'quiz_answers', 'quiz_start_time', 
-                       'quiz_run_id', 'show_feedback', 'answer_locked']:
+                       'quiz_run_id', 'show_feedback', 'answered_questions']:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
@@ -745,7 +775,7 @@ if st.session_state.get('quiz_active', False):
     st.markdown(f"""
     <div class="quiz-header">
         <div class="quiz-title">🧩 {HINDUISMUS_QUIZ['title']}</div>
-        <div class="run-id-badge">🆔 Run: {st.session_state.quiz_run_id}</div>
+        <div class="run-id-badge">Run: {st.session_state.quiz_run_id}</div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -769,17 +799,17 @@ else:
     """, unsafe_allow_html=True)
     
     st.markdown(f"""
-    <div style="background: rgba(255,255,255,0.05); border-radius: 20px; padding: 2rem; 
-                backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); margin: 2rem 0;">
+    <div style="background: #111111; border-radius: 10px; padding: 2rem; 
+                border: 1px solid #333333; margin: 2rem 0;">
         <h2 style="color: white; text-align: center; margin-bottom: 1.5rem;">
             📚 {HINDUISMUS_QUIZ['title']}
         </h2>
-        <div style="color: rgba(255,255,255,0.7); margin: 1rem 0; font-size: 1.1rem;">
-            📝 Anzahl Fragen: {len(HINDUISMUS_QUIZ['questions'])}<br>
-            🎯 Fragen werden in zufälliger Reihenfolge angezeigt<br>
-            ⏱️ Die Zeit wird automatisch gemessen<br>
-            🆔 Jeder Durchlauf erhält eine eindeutige Run-ID<br>
-            ⚡ Nach jeder Antwort geht es automatisch weiter (1,5 Sekunden)
+        <div style="color: #cccccc; margin: 1rem 0; font-size: 1rem;">
+            📝 <strong>Anzahl Fragen:</strong> {len(HINDUISMUS_QUIZ['questions'])}<br>
+            🎯 <strong>Zufällige Reihenfolge:</strong> Ja<br>
+            ⏱️ <strong>Zeitmessung:</strong> Automatisch<br>
+            🆔 <strong>Run-ID:</strong> Eindeutig pro Durchlauf<br>
+            🔒 <strong>Beantwortete Fragen:</strong> Können nicht erneut beantwortet werden
         </div>
     </div>
     """, unsafe_allow_html=True)
