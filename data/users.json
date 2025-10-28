@@ -21,17 +21,6 @@
     "failed_attempts": 0,
     "locked_until": null
   },
-  "xdxd": {
-    "password_hash": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
-    "role": "user",
-    "active": false,
-    "created_at": "2025-10-01T06:53:17.505275",
-    "last_login": null,
-    "using_default": true,
-    "salt": "",
-    "failed_attempts": 0,
-    "locked_until": null
-  },
   "fuckyou": {
     "password_hash": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
     "role": "user",
