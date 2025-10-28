@@ -21,17 +21,6 @@
     "failed_attempts": 0,
     "locked_until": null
   },
-  "mehmet-ali": {
-    "password_hash": "3209c36b80cdd5a87daae22152cb81d6ab0ace06a9e877c17011a3c39a018bed",
-    "role": "user",
-    "active": false,
-    "created_at": "2025-10-01T06:53:17.543697",
-    "last_login": null,
-    "using_default": false,
-    "salt": "4bd8099ebe7fa8eb2ef290ff713a4287",
-    "failed_attempts": 0,
-    "locked_until": null
-  },
   "test321": {
     "password_hash": "c31c786931d44802933b1420e67a04b35c3798222ffae24df98ff586444aeec4",
     "role": "user",

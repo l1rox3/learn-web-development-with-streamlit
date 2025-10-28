@@ -21,17 +21,6 @@
     "failed_attempts": 0,
     "locked_until": null
   },
-  "test321": {
-    "password_hash": "c31c786931d44802933b1420e67a04b35c3798222ffae24df98ff586444aeec4",
-    "role": "user",
-    "active": false,
-    "created_at": "2025-10-01T12:31:09.314954",
-    "last_login": null,
-    "using_default": false,
-    "salt": "1944d33fa21a7c1e1e8aa3d0b864c3d3",
-    "failed_attempts": 0,
-    "locked_until": null
-  },
   "test32": {
     "password_hash": "037e52635dcdf5aaf345ad726cede25d1d2be4e574cde2dd7fa79f3b3e19d0aa",
     "role": "user",
