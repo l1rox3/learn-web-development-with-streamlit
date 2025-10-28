@@ -163,5 +163,16 @@
     "salt": "26de184068c6515540442f52b434c786",
     "failed_attempts": 0,
     "locked_until": null
+  },
+  "lirox": {
+    "password_hash": "f3fa0b4d72c1d6917ed3302a07ac0e56d49c44a78afe1da0f74114154f4ed42d",
+    "role": "user",
+    "active": true,
+    "created_at": "2025-10-28T19:23:49.780039",
+    "last_login": "2025-10-28T19:23:49.780050",
+    "using_default": true,
+    "salt": "f5f8d5b6e1cb5981ac7afa75434c3332",
+    "failed_attempts": 0,
+    "locked_until": null
   }
 }
