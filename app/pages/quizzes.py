@@ -5,6 +5,7 @@ import random
 import time
 from datetime import datetime
 from pages.auth import AuthManager
+import uuid
 
 # =========================================================
 # KONFIGURATION
@@ -164,6 +165,18 @@ st.markdown("""
         margin: 0.5rem 0;
     }
     
+    /* Run ID Badge */
+    .run-id-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        color: white;
+        font-size: 0.9rem;
+        display: inline-block;
+        margin-top: 1rem;
+        font-family: monospace;
+    }
+    
     /* Feedback */
     .feedback-correct {
         background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
@@ -233,11 +246,11 @@ def load_quizzes():
     return quizzes
 
 
-def save_result(username, quiz_name, correct, total, time_seconds):
-    """Speichert die Ergebnisse des Benutzers."""
+def save_result(username, quiz_name, correct, total, time_seconds, run_id, detailed_answers):
+    """Speichert die Ergebnisse eines Quiz-Durchlaufs mit eindeutiger Run-ID."""
     os.makedirs(ANSWERS_DIR, exist_ok=True)
     path = os.path.join(ANSWERS_DIR, f"{username}.json")
-    data = {"quizzes": []}
+    data = {"runs": []}
 
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
@@ -246,15 +259,28 @@ def save_result(username, quiz_name, correct, total, time_seconds):
             except:
                 pass
 
-    if "quizzes" not in data:
-        data["quizzes"] = []
+    # Sicherstellen, dass "runs" existiert (Migration von altem Format)
+    if "runs" not in data:
+        data["runs"] = []
+        # Alte "quizzes" in "runs" migrieren, falls vorhanden
+        if "quizzes" in data:
+            for old_quiz in data["quizzes"]:
+                old_quiz["run_id"] = str(uuid.uuid4())[:8]
+                if "detailed_answers" not in old_quiz:
+                    old_quiz["detailed_answers"] = []
+                data["runs"].append(old_quiz)
+            del data["quizzes"]
 
-    data["quizzes"].append({
+    # Neuen Run hinzufügen
+    data["runs"].append({
+        "run_id": run_id,
         "quiz_name": quiz_name,
         "correct": correct,
         "total": total,
+        "percentage": round((correct / total) * 100, 1),
         "time_seconds": round(time_seconds, 2),
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
+        "detailed_answers": detailed_answers
     })
 
     with open(path, "w", encoding="utf-8") as f:
@@ -262,9 +288,12 @@ def save_result(username, quiz_name, correct, total, time_seconds):
 
 
 def initialize_quiz_session(quiz):
-    """Initialisiert eine neue Quiz-Session."""
+    """Initialisiert eine neue Quiz-Session mit eindeutiger Run-ID."""
     questions = quiz["questions"].copy()
     random.shuffle(questions)
+    
+    # Generiere eindeutige Run-ID
+    run_id = str(uuid.uuid4())[:8]  # Kurze, lesbare ID
     
     st.session_state.quiz_active = True
     st.session_state.quiz_questions = questions
@@ -273,6 +302,7 @@ def initialize_quiz_session(quiz):
     st.session_state.quiz_answers = []
     st.session_state.quiz_start_time = time.time()
     st.session_state.answered_current = False
+    st.session_state.quiz_run_id = run_id
 
 
 def render_progress_bar(current, total):
@@ -383,14 +413,17 @@ def render_quiz_results():
     total = len(st.session_state.quiz_questions)
     time_taken = time.time() - st.session_state.quiz_start_time
     percentage = (score / total) * 100
+    run_id = st.session_state.quiz_run_id
     
-    # Save result
+    # Save result mit detaillierten Antworten
     save_result(
         username,
         st.session_state.current_quiz["title"],
         score,
         total,
-        time_taken
+        time_taken,
+        run_id,
+        st.session_state.quiz_answers
     )
     
     # Result display
@@ -400,6 +433,7 @@ def render_quiz_results():
         <div class="result-score">{score} / {total}</div>
         <div class="result-text">📊 Erfolgsquote: {percentage:.1f}%</div>
         <div class="result-text">⏱️ Zeit: {int(time_taken // 60)}:{int(time_taken % 60):02d} Minuten</div>
+        <div class="run-id-badge">🆔 Run-ID: {run_id}</div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -414,6 +448,18 @@ def render_quiz_results():
     else:
         st.warning("💪 Nicht aufgeben! Versuche es noch einmal!")
     
+    # Show detailed answers
+    with st.expander("📋 Detaillierte Antworten anzeigen"):
+        for i, answer in enumerate(st.session_state.quiz_answers, 1):
+            status = "✅ Richtig" if answer["is_correct"] else "❌ Falsch"
+            st.markdown(f"""
+            **Frage {i}:** {answer['question']}  
+            {status}  
+            - Deine Antwort: {answer['selected']}  
+            - Richtige Antwort: {answer['correct']}
+            """)
+            st.divider()
+    
     # Restart button
     col1, col2 = st.columns(2)
     with col1:
@@ -425,7 +471,7 @@ def render_quiz_results():
         if st.button("📋 Neues Quiz wählen", use_container_width=True):
             for key in ['quiz_active', 'quiz_questions', 'current_question_idx', 
                        'quiz_score', 'quiz_answers', 'quiz_start_time', 
-                       'answered_current', 'current_quiz']:
+                       'answered_current', 'current_quiz', 'quiz_run_id']:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
@@ -437,10 +483,11 @@ def render_quiz_results():
 
 # Check if quiz is active
 if st.session_state.get('quiz_active', False):
-    # Show quiz header
+    # Show quiz header with Run-ID
     st.markdown(f"""
     <div class="quiz-header">
         <div class="quiz-title">🧩 {st.session_state.current_quiz['title']}</div>
+        <div class="run-id-badge">🆔 Run: {st.session_state.quiz_run_id}</div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -489,7 +536,8 @@ else:
     <div style="color: rgba(255,255,255,0.7); margin: 1rem 0; font-size: 1.1rem;">
         📝 Anzahl Fragen: {num_questions}<br>
         🎯 Fragen werden in zufälliger Reihenfolge angezeigt<br>
-        ⏱️ Die Zeit wird automatisch gemessen
+        ⏱️ Die Zeit wird automatisch gemessen<br>
+        🆔 Jeder Durchlauf erhält eine eindeutige Run-ID
     </div>
     """, unsafe_allow_html=True)
     
