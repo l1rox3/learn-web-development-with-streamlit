@@ -10,17 +10,6 @@
     "failed_attempts": 0,
     "locked_until": null
   },
-  "fi_kdich": {
-    "password_hash": "e0f65943f128ed3a7f0eb081bbc466492bf02c9db8ea951dc62b1f2146b26aff",
-    "role": "user",
-    "active": false,
-    "created_at": "2025-10-01T06:53:17.505269",
-    "last_login": null,
-    "using_default": false,
-    "salt": "",
-    "failed_attempts": 0,
-    "locked_until": null
-  },
   "admin2": {
     "password_hash": "5e271e0202359be03535a23bfc99e127d6f962d1ab1d610a82a66d3fb28906a6",
     "role": "admin",
