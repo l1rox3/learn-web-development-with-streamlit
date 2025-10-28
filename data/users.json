@@ -21,17 +21,6 @@
     "failed_attempts": 0,
     "locked_until": null
   },
-  "fuckyou": {
-    "password_hash": "6becfe29453315664a5a99b2afb853fa8709d69ca80769898d8a05722c4aa4e8",
-    "role": "user",
-    "active": false,
-    "created_at": "2025-10-01T06:53:17.505277",
-    "last_login": null,
-    "using_default": true,
-    "salt": "",
-    "failed_attempts": 0,
-    "locked_until": null
-  },
   "mehmet-ali": {
     "password_hash": "3209c36b80cdd5a87daae22152cb81d6ab0ace06a9e877c17011a3c39a018bed",
     "role": "user",
