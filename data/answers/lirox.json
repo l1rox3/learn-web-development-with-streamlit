@@ -100,6 +100,107 @@
                     "is_correct": true
                 }
             ]
+        },
+        {
+            "run_id": "7259bfaf",
+            "quiz_name": "Kleidung und Tiere im Hinduismus",
+            "correct": 6,
+            "total": 15,
+            "percentage": 40.0,
+            "time_seconds": 43.55,
+            "timestamp": "2025-10-28T20:27:47.427870",
+            "detailed_answers": [
+                {
+                    "question": "Was kann ein Sari über die Trägerin verraten?",
+                    "selected": "Die Herkunft der Frau",
+                    "correct": "Die Herkunft der Frau",
+                    "is_correct": true
+                },
+                {
+                    "question": "Was wird im Hinduismus NICHT mit Tieren gemacht?",
+                    "selected": "Sie gelten als heilig",
+                    "correct": "Sie werden getötet oder gegessen",
+                    "is_correct": false
+                },
+                {
+                    "question": "Was ist ein Sari?",
+                    "selected": "Ein weites, langes Hemd für Männer",
+                    "correct": "Ein ca. 6m langer Stoffstreifen, mehrfach um den Körper gewickelt",
+                    "is_correct": false
+                },
+                {
+                    "question": "Was ist Salwar Kameez?",
+                    "selected": "Eine Kombination aus Hose und langem Oberteil",
+                    "correct": "Eine Kombination aus Hose und langem Oberteil",
+                    "is_correct": true
+                },
+                {
+                    "question": "Was bedeutet Kleidung im Hinduismus?",
+                    "selected": "Muss immer weiß sein",
+                    "correct": "Steht für Respekt gegenüber Gott und Tradition",
+                    "is_correct": false
+                },
+                {
+                    "question": "Was ist ein Dhoti?",
+                    "selected": "Eine Kombination aus Hose und Oberteil",
+                    "correct": "Ein langes Stück Stoff, in der Taille zusammengeknotet",
+                    "is_correct": false
+                },
+                {
+                    "question": "Welche 5 Gaben liefert die heilige Kuh?",
+                    "selected": "Milch, Honig, Öl, Wasser, Salz",
+                    "correct": "Ghee (geklärte Butter), Lassi (Joghurtgetränk), Mist als Brennmaterial, Pflanzendünger, Milch",
+                    "is_correct": false
+                },
+                {
+                    "question": "Was ist ein Kurta?",
+                    "selected": "Ein Stoffstreifen für Frauen",
+                    "correct": "Ein weites, langes Hemd für Männer ohne Kragen",
+                    "is_correct": false
+                },
+                {
+                    "question": "Warum werden Tiere im Hinduismus verehrt?",
+                    "selected": "Sie haben symbolische und religiöse Bedeutung",
+                    "correct": "Sie haben symbolische und religiöse Bedeutung",
+                    "is_correct": true
+                },
+                {
+                    "question": "Was gehört oft zu einem Nasenpiercing im Hinduismus?",
+                    "selected": "Ein Armband",
+                    "correct": "Eine Kette, die mit einem Ohrring verbunden ist",
+                    "is_correct": false
+                },
+                {
+                    "question": "Für welchen Gott steht der Elefant?",
+                    "selected": "Vishnu - Symbol für Schutz",
+                    "correct": "Ganesha - Symbol für Glück, Weisheit und Neubeginn",
+                    "is_correct": false
+                },
+                {
+                    "question": "Für welchen Gott steht der Pfau?",
+                    "selected": "Ganesha - Symbol für Glück",
+                    "correct": "Seraswati - Symbol für Stolz und Schönheit",
+                    "is_correct": false
+                },
+                {
+                    "question": "Was ist ein Sherwani?",
+                    "selected": "Ein langes Jackett mit Stehkragen, über Dhoti getragen",
+                    "correct": "Ein langes Jackett mit Stehkragen, über Dhoti getragen",
+                    "is_correct": true
+                },
+                {
+                    "question": "Für welchen Gott steht die Schlange?",
+                    "selected": "Shiva - Symbol für Kraft und Ewigkeit",
+                    "correct": "Shiva - Symbol für Kraft und Ewigkeit",
+                    "is_correct": true
+                },
+                {
+                    "question": "Wie lang ist ein typischer Kurta?",
+                    "selected": "Reicht bis zum Knie",
+                    "correct": "Reicht bis zum Knie",
+                    "is_correct": true
+                }
+            ]
         }
     ]
 }
