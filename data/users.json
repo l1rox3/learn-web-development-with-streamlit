@@ -21,17 +21,6 @@
     "failed_attempts": 0,
     "locked_until": null
   },
-  "adolf": {
-    "password_hash": "5684ccf6162dc64747d0e9498aec23d6f94a0329e09219ab5fc52d6e9638680e",
-    "role": "user",
-    "active": false,
-    "created_at": "2025-10-15T18:37:04.512838",
-    "last_login": null,
-    "using_default": true,
-    "salt": "a27a8a0aad4e1c8c32fc6987816a7ec6",
-    "failed_attempts": 0,
-    "locked_until": null
-  },
   "hhhh": {
     "password_hash": "0acb92776bcaa5ea2de020b1d4e7492ad47664cfd0265b5bd5d409c8e0ff46e6",
     "role": "user",
