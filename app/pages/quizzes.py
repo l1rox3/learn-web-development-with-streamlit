@@ -539,6 +539,10 @@ def render_current_question():
         render_quiz_results()
         return
     
+    # Initialisiere answer_locked falls nicht vorhanden
+    if 'answer_locked' not in st.session_state:
+        st.session_state.answer_locked = False
+    
     question = questions[idx]
     total = len(questions)
     
