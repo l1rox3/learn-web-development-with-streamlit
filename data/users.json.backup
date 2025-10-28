@@ -169,10 +169,10 @@
     "role": "user",
     "active": true,
     "created_at": "2025-10-28T19:23:49.780039",
-    "last_login": "2025-10-28T20:03:33.585608",
+    "last_login": "2025-10-28T20:15:29.631629",
     "using_default": true,
     "salt": "f5f8d5b6e1cb5981ac7afa75434c3332",
-    "failed_attempts": 1,
+    "failed_attempts": 0,
     "locked_until": null
   }
 }
