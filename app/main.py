@@ -8,6 +8,7 @@ Features:
 - Bestenliste mit Statistiken
 - Theme-Selector
 - Passwortwechsel
+- PDF Datenquelle
 - Git Auto-Sync
 
 Created by l1rox3 • 2025
@@ -39,6 +40,7 @@ LOG.setLevel(logging.INFO)
 
 ANSWERS_DIR = "./data/answers"
 SETTINGS_FILE = "./data/settings.json"
+PDF_PATH = "./data/data.pdf"
 
 # =========================================================
 # SESSION VALIDIERUNG
@@ -299,6 +301,16 @@ def apply_theme() -> None:
         box-shadow: 0 0 0 2px {t['accent']}33 !important;
     }}
 
+    /* PDF Card */
+    .pdf-card {{
+        background: {t['surface']};
+        border: 1px solid {t['border']};
+        border-radius: 20px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        margin: 1rem 0;
+    }}
+
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {{
         gap: 1rem;
@@ -416,6 +428,8 @@ def init_session() -> None:
     st.session_state.setdefault("using_default", False)
     st.session_state.setdefault("skip_password_change", False)
     st.session_state.setdefault("show_theme_selector", False)
+    st.session_state.setdefault("show_leaderboard", False)
+    st.session_state.setdefault("show_pdf_data", False)
     st.session_state.setdefault("initialized", True)
     LOG.debug("Session initialisiert")
 
@@ -423,62 +437,52 @@ def init_session() -> None:
 # DATA FUNKTIONEN
 # =========================================================
 def load_user_data(username: str) -> Dict:
-    """Lädt Benutzerdaten."""
+    """Lädt Benutzerdaten mit runs."""
     user_file = os.path.join(ANSWERS_DIR, f"{username}.json")
     if not os.path.exists(user_file):
-        return {"username": username, "quizzes": []}
+        return {"username": username, "runs": []}
     try:
         with open(user_file, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+            # Migration: alte "quizzes" zu "runs"
+            if "quizzes" in data and "runs" not in data:
+                data["runs"] = data.pop("quizzes")
+            if "runs" not in data:
+                data["runs"] = []
+            return data
     except Exception:
         LOG.exception("Fehler beim Laden von Benutzerdaten für %s", username)
-        return {"username": username, "quizzes": []}
+        return {"username": username, "runs": []}
 
 
-def get_available_quizzes() -> List[str]:
-    """Ermittelt verfügbare Quiz-Namen."""
+def get_all_runs() -> List[Dict]:
+    """Lädt alle Runs aller Benutzer."""
     if not os.path.exists(ANSWERS_DIR):
         return []
-    quiz_names = set()
-    for filename in os.listdir(ANSWERS_DIR):
-        if not filename.endswith(".json"):
-            continue
-        ud = load_user_data(filename[:-5])
-        for q in ud.get("quizzes", []):
-            name = q.get("quiz_name", "")
-            if name:
-                quiz_names.add(name)
-    return sorted(quiz_names)
-
-
-def get_leaderboard(quiz_name: Optional[str] = None) -> List[Dict]:
-    """Erstellt Bestenliste."""
-    if not os.path.exists(ANSWERS_DIR):
-        return []
-    leaderboard = []
+    
+    all_runs = []
     for filename in os.listdir(ANSWERS_DIR):
         if not filename.endswith(".json"):
             continue
         username = filename[:-5]
         user_data = load_user_data(username)
-        quizzes = user_data.get("quizzes", [])
-        if quiz_name:
-            quizzes = [q for q in quizzes if q.get("quiz_name") == quiz_name]
-        if not quizzes:
-            continue
-        total_correct = sum(int(q.get("correct", 0)) for q in quizzes)
-        total_questions = sum(int(q.get("total", 0)) for q in quizzes)
-        total_time = sum(float(q.get("time_seconds", 0)) for q in quizzes)
-        avg_time = total_time / len(quizzes) if quizzes else 0
-        leaderboard.append({
-            "username": username,
-            "correct": total_correct,
-            "total": total_questions,
-            "avg_time": avg_time,
-            "attempts": len(quizzes),
-        })
-    leaderboard.sort(key=lambda x: (-x["correct"], x["avg_time"]))
-    return leaderboard
+        for run in user_data.get("runs", []):
+            run_copy = run.copy()
+            run_copy["username"] = username
+            all_runs.append(run_copy)
+    
+    return all_runs
+
+
+def get_leaderboard() -> List[Dict]:
+    """Erstellt Bestenliste aus allen Runs."""
+    all_runs = get_all_runs()
+    if not all_runs:
+        return []
+    
+    # Sortiere nach Prozentsatz (absteigend), dann nach Zeit (aufsteigend)
+    all_runs.sort(key=lambda x: (-x.get("percentage", 0), x.get("time_seconds", 999999)))
+    return all_runs[:50]  # Top 50
 
 
 def format_time(seconds: float) -> str:
@@ -663,41 +667,34 @@ def show_password_change() -> None:
 
 
 def show_leaderboard_page() -> None:
-    """Bestenliste."""
-    available_quizzes = get_available_quizzes()
-    if not available_quizzes:
+    """Bestenliste mit allen Runs."""
+    leaderboard = get_leaderboard()
+    
+    if not leaderboard:
         st.info("📊 Noch keine Quiz-Ergebnisse vorhanden. Spiele dein erstes Quiz!")
         return
 
-    quiz_filter = st.selectbox("🎯 Kategorie wählen", ["Alle Quizze"] + available_quizzes)
-    selected_quiz = None if quiz_filter == "Alle Quizze" else quiz_filter
-    leaderboard = get_leaderboard(selected_quiz)
-
-    if not leaderboard:
-        st.info("Keine Einträge für diese Kategorie")
-        return
-
-    # Stats
-    total_players = len(leaderboard)
-    total_attempts = sum(entry["attempts"] for entry in leaderboard)
-    total_correct = sum(entry["correct"] for entry in leaderboard)
-    total_questions = sum(entry["total"] for entry in leaderboard)
+    # Global Stats
+    all_runs = get_all_runs()
+    total_runs = len(all_runs)
+    total_correct = sum(r.get("correct", 0) for r in all_runs)
+    total_questions = sum(r.get("total", 0) for r in all_runs)
     success_rate = (total_correct / total_questions * 100) if total_questions > 0 else 0
-    avg_time = sum(entry["avg_time"] for entry in leaderboard) / len(leaderboard) if leaderboard else 0
+    unique_players = len(set(r.get("username", "") for r in all_runs))
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.markdown(f"""
         <div class="stats-card">
             <div class="stats-label">👥 Spieler</div>
-            <div class="stats-value">{total_players}</div>
+            <div class="stats-value">{unique_players}</div>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown(f"""
         <div class="stats-card">
-            <div class="stats-label">Versuche</div>
-            <div class="stats-value">{total_attempts}</div>
+            <div class="stats-label">🎮 Total Runs</div>
+            <div class="stats-value">{total_runs}</div>
         </div>
         """, unsafe_allow_html=True)
     with col3:
@@ -710,31 +707,175 @@ def show_leaderboard_page() -> None:
     with col4:
         st.markdown(f"""
         <div class="stats-card">
-            <div class="stats-label">⏱️ Ø Zeit</div>
-            <div class="stats-value" style="font-size:2rem">{format_time(avg_time)}</div>
+            <div class="stats-label">✅ Richtige</div>
+            <div class="stats-value">{total_correct}/{total_questions}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<h3 style='margin-top: 2rem; margin-bottom: 1rem;'>🏆 Top 10 Rangliste</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='margin-top: 2rem; margin-bottom: 1rem;'>🏆 Top 50 Rangliste</h3>", unsafe_allow_html=True)
     
     current_username = st.session_state.get("username", "")
-    for rank, entry in enumerate(leaderboard[:10], 1):
-        is_current = entry["username"] == current_username
+    for rank, entry in enumerate(leaderboard, 1):
+        is_current = entry.get("username") == current_username
         rank_icon = "🥇" if rank == 1 else "🥈" if rank == 2 else "🥉" if rank == 3 else f"#{rank}"
         badge = '<span style="background:linear-gradient(135deg, #667eea, #764ba2);color:#fff;padding:0.2rem 0.6rem;border-radius:8px;margin-left:0.5rem;font-weight:700;">Du</span>' if is_current else ""
         
         st.markdown(f"""
         <div class="leaderboard-item">
-            <div style="display:flex;align-items:center;gap:1.5rem">
+            <div style="display:flex;align-items:center;gap:1.5rem;flex:1">
                 <div class="leaderboard-rank">{rank_icon}</div>
-                <div style="font-weight:700;font-size:1.1rem">{entry['username']}{badge}</div>
+                <div>
+                    <div style="font-weight:700;font-size:1.1rem">{entry.get('username', 'Unknown')}{badge}</div>
+                    <div style="font-size:0.9rem;color:rgba(255,255,255,0.6)">
+                        🆔 {entry.get('run_id', 'N/A')} | {entry.get('quiz_name', 'Unknown Quiz')}
+                    </div>
+                </div>
             </div>
             <div style="text-align:right">
-                <div style="font-weight:700;font-size:1.1rem">{entry['correct']} / {entry['total']} 🎯</div>
-                <div style="font-size:0.9rem;color:rgba(255,255,255,0.6)">⏱️ {format_time(entry['avg_time'])} • 🎮 {entry['attempts']} Versuche</div>
+                <div style="font-weight:700;font-size:1.3rem;color:#667eea">{entry.get('percentage', 0):.1f}%</div>
+                <div style="font-size:0.9rem;color:rgba(255,255,255,0.6)">
+                    🎯 {entry.get('correct', 0)}/{entry.get('total', 0)} | ⏱️ {format_time(entry.get('time_seconds', 0))}
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
+
+
+def show_pdf_data_page() -> None:
+    """Zeigt PDF-Datenquelle und alle Ergebnisse."""
+    st.markdown("<h3 style='margin-bottom: 1.5rem;'>📄 Quiz-Datenquelle</h3>", unsafe_allow_html=True)
+    
+    # PDF Info
+    if os.path.exists(PDF_PATH):
+        file_size = os.path.getsize(PDF_PATH) / 1024  # KB
+        st.markdown(f"""
+        <div class="pdf-card">
+            <h4 style="margin:0 0 1rem 0">📕 Hinduismus - Kleidung und Tiere</h4>
+            <p style="color:rgba(255,255,255,0.7);margin:0">
+                📁 Pfad: <code>./data/data.pdf</code><br>
+                📊 Größe: {file_size:.1f} KB<br>
+                ✅ Status: Verfügbar
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Download Button
+        with open(PDF_PATH, "rb") as pdf_file:
+            st.download_button(
+                label="📥 PDF herunterladen",
+                data=pdf_file,
+                file_name="hinduismus_quiz_data.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
+    else:
+        st.warning("⚠️ PDF-Datei nicht gefunden unter: ./data/data.pdf")
+    
+    st.markdown("<h3 style='margin: 2rem 0 1rem 0;'>📊 Alle Quiz-Ergebnisse</h3>", unsafe_allow_html=True)
+    
+    all_runs = get_all_runs()
+    
+    if not all_runs:
+        st.info("Noch keine Quiz-Ergebnisse vorhanden.")
+        return
+    
+    # Statistiken
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown(f"""
+        <div class="stats-card">
+            <div class="stats-label">Gesamt Durchläufe</div>
+            <div class="stats-value">{len(all_runs)}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        avg_score = sum(r.get("percentage", 0) for r in all_runs) / len(all_runs)
+        st.markdown(f"""
+        <div class="stats-card">
+            <div class="stats-label">Ø Erfolgsrate</div>
+            <div class="stats-value">{avg_score:.1f}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        perfect_scores = sum(1 for r in all_runs if r.get("percentage", 0) == 100)
+        st.markdown(f"""
+        <div class="stats-card">
+            <div class="stats-label">🌟 Perfekt</div>
+            <div class="stats-value">{perfect_scores}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Filter
+    st.markdown("<div style='margin: 2rem 0 1rem 0;'>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        filter_user = st.selectbox(
+            "Nach Benutzer filtern:",
+            ["Alle"] + sorted(set(r.get("username", "") for r in all_runs))
+        )
+    with col2:
+        sort_by = st.selectbox(
+            "Sortieren nach:",
+            ["Neueste zuerst", "Beste zuerst", "Schnellste zuerst"]
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Filtern
+    filtered_runs = all_runs
+    if filter_user != "Alle":
+        filtered_runs = [r for r in filtered_runs if r.get("username") == filter_user]
+    
+    # Sortieren
+    if sort_by == "Neueste zuerst":
+        filtered_runs.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    elif sort_by == "Beste zuerst":
+        filtered_runs.sort(key=lambda x: x.get("percentage", 0), reverse=True)
+    else:  # Schnellste zuerst
+        filtered_runs.sort(key=lambda x: x.get("time_seconds", 999999))
+    
+    # Anzeige
+    for run in filtered_runs:
+        timestamp = run.get("timestamp", "")
+        if timestamp:
+            try:
+                from datetime import datetime
+                dt = datetime.fromisoformat(timestamp)
+                time_str = dt.strftime("%d.%m.%Y %H:%M")
+            except:
+                time_str = timestamp[:16]
+        else:
+            time_str = "Unbekannt"
+        
+        percentage = run.get("percentage", 0)
+        color = "#38ef7d" if percentage >= 80 else "#f45c43" if percentage < 60 else "#667eea"
+        
+        with st.expander(f"🆔 {run.get('run_id', 'N/A')} | {run.get('username', 'Unknown')} | {percentage:.1f}% | {time_str}"):
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"**Quiz:** {run.get('quiz_name', 'Unknown')}")
+                st.markdown(f"**Benutzer:** {run.get('username', 'Unknown')}")
+                st.markdown(f"**Run-ID:** `{run.get('run_id', 'N/A')}`")
+            with col2:
+                st.markdown(f"**Ergebnis:** {run.get('correct', 0)}/{run.get('total', 0)}")
+                st.markdown(f"**Erfolgsrate:** <span style='color:{color};font-weight:700'>{percentage:.1f}%</span>", unsafe_allow_html=True)
+                st.markdown(f"**Zeit:** {format_time(run.get('time_seconds', 0))}")
+            with col3:
+                st.markdown(f"**Datum:** {time_str}")
+            
+            # Detaillierte Antworten
+            detailed = run.get("detailed_answers", [])
+            if detailed:
+                st.markdown("---")
+                st.markdown("**📋 Detaillierte Antworten:**")
+                for i, answer in enumerate(detailed, 1):
+                    status = "✅" if answer.get("is_correct") else "❌"
+                    st.markdown(f"""
+                    **{i}. {answer.get('question', 'N/A')}**  
+                    {status} Deine Antwort: {answer.get('selected', 'N/A')}  
+                    {'✓ Richtig!' if answer.get('is_correct') else f"Richtige Antwort: {answer.get('correct', 'N/A')}"}
+                    """)
 
 
 def show_theme_selector() -> None:
@@ -775,46 +916,46 @@ def show_dashboard() -> None:
 
     # User Stats
     user_data = load_user_data(st.session_state.username)
-    quizzes = user_data.get("quizzes", [])
-    total_quizzes = len(quizzes)
-    total_correct = sum(q.get("correct", 0) for q in quizzes)
-    total_questions = sum(q.get("total", 0) for q in quizzes)
+    runs = user_data.get("runs", [])
+    total_runs = len(runs)
+    total_correct = sum(r.get("correct", 0) for r in runs)
+    total_questions = sum(r.get("total", 0) for r in runs)
     success_rate = (total_correct / total_questions * 100) if total_questions > 0 else 0
 
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown(f"""
         <div class="stats-card">
-            <div class="stats-label">Absolvierte Quizze</div>
-            <div class="stats-value">{total_quizzes}</div>
+            <div class="stats-label">🎮 Durchläufe</div>
+            <div class="stats-value">{total_runs}</div>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown(f"""
         <div class="stats-card">
-            <div class="stats-label">Richtige Antworten</div>
+            <div class="stats-label">✅ Richtige Antworten</div>
             <div class="stats-value">{total_correct}/{total_questions}</div>
         </div>
         """, unsafe_allow_html=True)
     with col3:
         st.markdown(f"""
         <div class="stats-card">
-            <div class="stats-label">Erfolgsrate</div>
+            <div class="stats-label">📈 Erfolgsrate</div>
             <div class="stats-value">{success_rate:.1f}%</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
 
-    # Action Cards
-    col1, col2, col3 = st.columns(3)
+    # Action Cards - 4 Spalten
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.markdown("""
         <div class="action-card">
             <h3>📝</h3>
-            <h3>Quiz starten</h3>
-            <p>Teste dein Wissen in verschiedenen Kategorien</p>
+            <h3>Quiz</h3>
+            <p>Starte ein Quiz</p>
         </div>
         """, unsafe_allow_html=True)
         if st.button("Zum Quiz", key="btn_quiz", use_container_width=True):
@@ -825,22 +966,34 @@ def show_dashboard() -> None:
         <div class="action-card">
             <h3>🏆</h3>
             <h3>Bestenliste</h3>
-            <p>Vergleiche dich mit anderen Spielern</p>
+            <p>Top Spieler</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Zur Bestenliste", key="btn_leaderboard", use_container_width=True):
+        if st.button("Rangliste", key="btn_leaderboard", use_container_width=True):
             st.session_state.show_leaderboard = True
             st.rerun()
     
     with col3:
         st.markdown("""
         <div class="action-card">
-            <h3>🎨</h3>
-            <h3>Design</h3>
-            <p>Personalisiere dein Dashboard</p>
+            <h3>📄</h3>
+            <h3>Daten</h3>
+            <p>PDF & Ergebnisse</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Theme ändern", key="btn_theme", use_container_width=True):
+        if st.button("Daten", key="btn_pdf", use_container_width=True):
+            st.session_state.show_pdf_data = True
+            st.rerun()
+    
+    with col4:
+        st.markdown("""
+        <div class="action-card">
+            <h3>🎨</h3>
+            <h3>Design</h3>
+            <p>Theme ändern</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Theme", key="btn_theme", use_container_width=True):
             st.session_state.show_theme_selector = True
             st.rerun()
 
@@ -859,7 +1012,7 @@ def show_dashboard() -> None:
 
     # Logout Button
     st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
-    if st.button(" Abmelden", key="btn_logout", use_container_width=True):
+    if st.button("🚪 Abmelden", key="btn_logout", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
@@ -885,6 +1038,26 @@ def main():
     # Passwort-Änderung erzwingen
     if st.session_state.get("using_default") and not st.session_state.get("skip_password_change"):
         show_password_change()
+        return
+
+    # PDF & Data Page
+    if st.session_state.get("show_pdf_data"):
+        apply_theme()
+        st.markdown(f"""
+        <div class="main-header">
+            <h1 class="main-title">📄 Quiz-Daten & Ergebnisse</h1>
+            <p class="main-subtitle">PDF-Quelle und alle Durchläufe</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        show_pdf_data_page()
+        
+        st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
+        if st.button("← Zurück zum Dashboard", use_container_width=True):
+            st.session_state.show_pdf_data = False
+            st.rerun()
+        
+        render_footer()
         return
 
     # Theme Selector
