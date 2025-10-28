@@ -1,0 +1,45 @@
+{
+    "runs": [
+        {
+            "run_id": "f8777531",
+            "quiz_name": "Test Quiz",
+            "correct": 0,
+            "total": 5,
+            "percentage": 0.0,
+            "time_seconds": 31.18,
+            "timestamp": "2025-10-28T19:32:36.715425",
+            "detailed_answers": [
+                {
+                    "question": "Was ist falsch?",
+                    "selected": "JavaScript läuft im Browser",
+                    "correct": "RAM ist unbegrenzt",
+                    "is_correct": false
+                },
+                {
+                    "question": "Welche Antwort ist richtig?",
+                    "selected": "faltsch",
+                    "correct": "richtig",
+                    "is_correct": false
+                },
+                {
+                    "question": "Wie heißt der Datentyp für ganze Zahlen in Python?",
+                    "selected": "str",
+                    "correct": "int",
+                    "is_correct": false
+                },
+                {
+                    "question": "Was ergibt 2 + 2?",
+                    "selected": "5",
+                    "correct": "4",
+                    "is_correct": false
+                },
+                {
+                    "question": "Ist Streamlit ein Python-Framework?",
+                    "selected": "Nur am Wochenende",
+                    "correct": "Ja",
+                    "is_correct": false
+                }
+            ]
+        }
+    ]
+}
