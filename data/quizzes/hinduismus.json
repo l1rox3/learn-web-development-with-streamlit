@@ -1,0 +1,155 @@
+{
+    "title": "Kleidung und Tiere im Hinduismus",
+    "questions": [
+        {
+            "question": "Was ist ein Sari?",
+            "options": [
+                "Ein ca. 6m langer Stoffstreifen, mehrfach um den Körper gewickelt",
+                "Ein weites, langes Hemd für Männer",
+                "Eine Kombination aus Hose und langem Oberteil",
+                "Ein langes Jackett mit Stehkragen"
+            ],
+            "answer": "Ein ca. 6m langer Stoffstreifen, mehrfach um den Körper gewickelt"
+        },
+        {
+            "question": "Was ist ein Kurta?",
+            "options": [
+                "Ein weites, langes Hemd für Männer ohne Kragen",
+                "Ein hosenartiges Kleidungsstück",
+                "Ein Stoffstreifen für Frauen",
+                "Eine Jacke mit Stehkragen"
+            ],
+            "answer": "Ein weites, langes Hemd für Männer ohne Kragen"
+        },
+        {
+            "question": "Was ist ein Dhoti?",
+            "options": [
+                "Ein langes Stück Stoff, in der Taille zusammengeknotet",
+                "Eine Kombination aus Hose und Oberteil",
+                "Ein Stoffstreifen für den Kopf",
+                "Ein langes Jackett"
+            ],
+            "answer": "Ein langes Stück Stoff, in der Taille zusammengeknotet"
+        },
+        {
+            "question": "Was ist ein Sherwani?",
+            "options": [
+                "Ein langes Jackett mit Stehkragen, über Dhoti getragen",
+                "Ein weites Hemd ohne Kragen",
+                "Eine Art Hose",
+                "Ein Stoffstreifen"
+            ],
+            "answer": "Ein langes Jackett mit Stehkragen, über Dhoti getragen"
+        },
+        {
+            "question": "Welche 5 Gaben liefert die heilige Kuh?",
+            "options": [
+                "Ghee (geklärte Butter), Lassi (Joghurtgetränk), Mist als Brennmaterial, Pflanzendünger, Milch",
+                "Fleisch, Milch, Leder, Wolle, Knochen",
+                "Butter, Käse, Sahne, Joghurt, Quark",
+                "Milch, Honig, Öl, Wasser, Salz"
+            ],
+            "answer": "Ghee (geklärte Butter), Lassi (Joghurtgetränk), Mist als Brennmaterial, Pflanzendünger, Milch"
+        },
+        {
+            "question": "Für welchen Gott steht der Elefant?",
+            "options": [
+                "Ganesha - Symbol für Glück, Weisheit und Neubeginn",
+                "Shiva - Symbol für Kraft und Ewigkeit",
+                "Seraswati - Symbol für Stolz und Schönheit",
+                "Vishnu - Symbol für Schutz"
+            ],
+            "answer": "Ganesha - Symbol für Glück, Weisheit und Neubeginn"
+        },
+        {
+            "question": "Für welchen Gott steht die Schlange?",
+            "options": [
+                "Shiva - Symbol für Kraft und Ewigkeit",
+                "Ganesha - Symbol für Glück und Weisheit",
+                "Seraswati - Symbol für Stolz und Schönheit",
+                "Brahma - Symbol für Schöpfung"
+            ],
+            "answer": "Shiva - Symbol für Kraft und Ewigkeit"
+        },
+        {
+            "question": "Für welchen Gott steht der Pfau?",
+            "options": [
+                "Seraswati - Symbol für Stolz und Schönheit",
+                "Shiva - Symbol für Kraft",
+                "Ganesha - Symbol für Glück",
+                "Krishna - Symbol für Liebe"
+            ],
+            "answer": "Seraswati - Symbol für Stolz und Schönheit"
+        },
+        {
+            "question": "Was bedeutet Kleidung im Hinduismus?",
+            "options": [
+                "Steht für Respekt gegenüber Gott und Tradition",
+                "Ist nur für religiöse Zeremonien wichtig",
+                "Muss immer weiß sein",
+                "Ist nicht wichtig"
+            ],
+            "answer": "Steht für Respekt gegenüber Gott und Tradition"
+        },
+        {
+            "question": "Was ist Salwar Kameez?",
+            "options": [
+                "Eine Kombination aus Hose und langem Oberteil",
+                "Ein Stoffstreifen für Frauen",
+                "Ein Hemd für Männer",
+                "Eine Art Jacke"
+            ],
+            "answer": "Eine Kombination aus Hose und langem Oberteil"
+        },
+        {
+            "question": "Warum werden Tiere im Hinduismus verehrt?",
+            "options": [
+                "Sie haben symbolische und religiöse Bedeutung",
+                "Sie sind besonders stark",
+                "Sie sind selten",
+                "Sie sind hübsch"
+            ],
+            "answer": "Sie haben symbolische und religiöse Bedeutung"
+        },
+        {
+            "question": "Was kann ein Sari über die Trägerin verraten?",
+            "options": [
+                "Die Herkunft der Frau",
+                "Ihr Alter",
+                "Ihren Beruf",
+                "Ihre Lieblingsspeise"
+            ],
+            "answer": "Die Herkunft der Frau"
+        },
+        {
+            "question": "Was gehört oft zu einem Nasenpiercing im Hinduismus?",
+            "options": [
+                "Eine Kette, die mit einem Ohrring verbunden ist",
+                "Ein Armband",
+                "Eine Halskette",
+                "Ein Ring"
+            ],
+            "answer": "Eine Kette, die mit einem Ohrring verbunden ist"
+        },
+        {
+            "question": "Wie lang ist ein typischer Kurta?",
+            "options": [
+                "Reicht bis zum Knie",
+                "Reicht bis zum Knöchel",
+                "Reicht bis zur Hüfte",
+                "Reicht bis zum Boden"
+            ],
+            "answer": "Reicht bis zum Knie"
+        },
+        {
+            "question": "Was wird im Hinduismus NICHT mit Tieren gemacht?",
+            "options": [
+                "Sie werden getötet oder gegessen",
+                "Sie werden verehrt",
+                "Sie haben religiöse Bedeutung",
+                "Sie gelten als heilig"
+            ],
+            "answer": "Sie werden getötet oder gegessen"
+        }
+    ]
+}
