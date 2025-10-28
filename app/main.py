@@ -818,7 +818,7 @@ def show_dashboard() -> None:
         </div>
         """, unsafe_allow_html=True)
         if st.button("Zum Quiz", key="btn_quiz", use_container_width=True):
-            st.switch_page("pages/quiz.py")
+            st.switch_page("pages/quizzes.py")
     
     with col2:
         st.markdown("""
