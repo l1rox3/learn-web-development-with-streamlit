@@ -512,7 +512,6 @@ def initialize_quiz_session():
     st.session_state.quiz_start_time = time.time()
     st.session_state.quiz_run_id = run_id
     st.session_state.show_feedback = False
-    st.session_state.feedback_time = None
 
 
 def render_progress_bar(current, total):
@@ -538,15 +537,6 @@ def render_current_question():
     if idx >= len(questions):
         render_quiz_results()
         return
-    
-    # Auto-advance nach Feedback
-    if st.session_state.show_feedback and st.session_state.feedback_time:
-        elapsed = time.time() - st.session_state.feedback_time
-        if elapsed >= 2.5:  # 2.5 Sekunden warten
-            st.session_state.current_question_idx += 1
-            st.session_state.show_feedback = False
-            st.session_state.feedback_time = None
-            st.rerun()
     
     question = questions[idx]
     total = len(questions)
@@ -577,8 +567,10 @@ def render_current_question():
             </div>
             """, unsafe_allow_html=True)
         
-        # Automatisches Weiterklicken nach 2.5 Sekunden
-        time.sleep(0.1)
+        # Automatisches Weiterklicken nach 2 Sekunden
+        time.sleep(2)
+        st.session_state.current_question_idx += 1
+        st.session_state.show_feedback = False
         st.rerun()
     
     else:
@@ -604,7 +596,6 @@ def render_current_question():
                     })
                     
                     st.session_state.show_feedback = True
-                    st.session_state.feedback_time = time.time()
                     st.rerun()
         
         st.markdown("</div>", unsafe_allow_html=True)
@@ -727,7 +718,7 @@ def render_quiz_results():
         if st.button("🏠 Zurück zur Startseite", use_container_width=True):
             for key in ['quiz_active', 'quiz_questions', 'current_question_idx', 
                        'quiz_score', 'quiz_answers', 'quiz_start_time', 
-                       'quiz_run_id', 'show_feedback', 'feedback_time']:
+                       'quiz_run_id', 'show_feedback']:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
