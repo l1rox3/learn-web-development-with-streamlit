@@ -10,17 +10,6 @@
     "failed_attempts": 0,
     "locked_until": null
   },
-  "l1rox3": {
-    "password_hash": "0a6ab5a1ea3d24aa42c790ae89bac302f06db296ac820b9a9918c928b113f691",
-    "role": "user",
-    "active": false,
-    "created_at": "2025-10-01T06:53:17.505267",
-    "last_login": null,
-    "using_default": false,
-    "salt": "",
-    "failed_attempts": 0,
-    "locked_until": null
-  },
   "fi_kdich": {
     "password_hash": "e0f65943f128ed3a7f0eb081bbc466492bf02c9db8ea951dc62b1f2146b26aff",
     "role": "user",
