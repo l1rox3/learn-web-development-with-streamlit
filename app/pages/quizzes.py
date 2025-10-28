@@ -572,8 +572,8 @@ def render_current_question():
             </div>
             """, unsafe_allow_html=True)
         
-        # Automatisches Weiterklicken nach 2 Sekunden
-        time.sleep(2)
+        # Sofort zur nächsten Frage nach kurzer Anzeige
+        time.sleep(1.5)
         st.session_state.current_question_idx += 1
         st.session_state.show_feedback = False
         st.session_state.answer_locked = False
@@ -779,7 +779,7 @@ else:
             🎯 Fragen werden in zufälliger Reihenfolge angezeigt<br>
             ⏱️ Die Zeit wird automatisch gemessen<br>
             🆔 Jeder Durchlauf erhält eine eindeutige Run-ID<br>
-            ⚡ Nach jeder Antwort geht es automatisch weiter
+            ⚡ Nach jeder Antwort geht es automatisch weiter (1,5 Sekunden)
         </div>
     </div>
     """, unsafe_allow_html=True)
