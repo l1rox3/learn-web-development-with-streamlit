@@ -44,12 +44,10 @@ username = st.session_state.username
 # =========================================================
 st.markdown("""
 <style>
-    /* Haupt-Container */
     .main {
         background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
     }
     
-    /* Quiz Header */
     .quiz-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 2rem;
@@ -67,7 +65,6 @@ st.markdown("""
         text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
-    /* Progress Bar */
     .progress-container {
         background: rgba(255,255,255,0.1);
         border-radius: 15px;
@@ -92,7 +89,6 @@ st.markdown("""
         font-weight: 600;
     }
     
-    /* Question Card */
     .question-card {
         background: rgba(255,255,255,0.05);
         border-radius: 20px;
@@ -120,7 +116,6 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     
-    /* Answer Buttons */
     div[data-testid="stButton"] button {
         font-size: 1.1rem !important;
         padding: 1.5rem 2rem !important;
@@ -141,7 +136,6 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4) !important;
     }
     
-    /* Result Card */
     .result-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 25px;
@@ -165,7 +159,6 @@ st.markdown("""
         margin: 0.5rem 0;
     }
     
-    /* Run ID Badge */
     .run-id-badge {
         background: rgba(255,255,255,0.2);
         padding: 0.5rem 1rem;
@@ -177,7 +170,6 @@ st.markdown("""
         font-family: monospace;
     }
     
-    /* Feedback */
     .feedback-correct {
         background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         padding: 1.5rem;
@@ -187,6 +179,7 @@ st.markdown("""
         margin: 1rem 0;
         font-weight: 600;
         box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+        animation: slideIn 0.3s ease;
     }
     
     .feedback-wrong {
@@ -198,9 +191,14 @@ st.markdown("""
         margin: 1rem 0;
         font-weight: 600;
         box-shadow: 0 5px 20px rgba(235, 51, 73, 0.4);
+        animation: slideIn 0.3s ease;
     }
     
-    /* Timer */
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
     .timer-display {
         background: rgba(255,255,255,0.1);
         padding: 1rem 2rem;
@@ -213,41 +211,256 @@ st.markdown("""
         border: 1px solid rgba(255,255,255,0.2);
     }
     
-    /* Quiz Selection */
-    .quiz-select-card {
+    .leaderboard-card {
         background: rgba(255,255,255,0.05);
-        padding: 2rem;
         border-radius: 20px;
+        padding: 2rem;
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255,255,255,0.1);
         margin: 2rem 0;
     }
+    
+    .leaderboard-title {
+        color: white;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .leaderboard-entry {
+        background: rgba(255,255,255,0.08);
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin: 0.5rem 0;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .leaderboard-rank {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #667eea;
+        min-width: 50px;
+    }
+    
+    .gold { color: #FFD700; }
+    .silver { color: #C0C0C0; }
+    .bronze { color: #CD7F32; }
 </style>
 """, unsafe_allow_html=True)
+
+# =========================================================
+# QUIZ DATEN - Hinduismus
+# =========================================================
+HINDUISMUS_QUIZ = {
+    "title": "Kleidung und Tiere im Hinduismus",
+    "questions": [
+        {
+            "question": "Was ist ein Sari?",
+            "options": [
+                "Ein ca. 6m langer Stoffstreifen, mehrfach um den Körper gewickelt",
+                "Ein weites, langes Hemd für Männer",
+                "Eine Kombination aus Hose und langem Oberteil",
+                "Ein langes Jackett mit Stehkragen"
+            ],
+            "answer": "Ein ca. 6m langer Stoffstreifen, mehrfach um den Körper gewickelt"
+        },
+        {
+            "question": "Was ist ein Kurta?",
+            "options": [
+                "Ein weites, langes Hemd für Männer ohne Kragen",
+                "Ein hosenartiges Kleidungsstück",
+                "Ein Stoffstreifen für Frauen",
+                "Eine Jacke mit Stehkragen"
+            ],
+            "answer": "Ein weites, langes Hemd für Männer ohne Kragen"
+        },
+        {
+            "question": "Was ist ein Dhoti?",
+            "options": [
+                "Ein langes Stück Stoff, in der Taille zusammengeknotet",
+                "Eine Kombination aus Hose und Oberteil",
+                "Ein Stoffstreifen für den Kopf",
+                "Ein langes Jackett"
+            ],
+            "answer": "Ein langes Stück Stoff, in der Taille zusammengeknotet"
+        },
+        {
+            "question": "Was ist ein Sherwani?",
+            "options": [
+                "Ein langes Jackett mit Stehkragen, über Dhoti getragen",
+                "Ein weites Hemd ohne Kragen",
+                "Eine Art Hose",
+                "Ein Stoffstreifen"
+            ],
+            "answer": "Ein langes Jackett mit Stehkragen, über Dhoti getragen"
+        },
+        {
+            "question": "Welche 5 Gaben liefert die heilige Kuh?",
+            "options": [
+                "Ghee (geklärte Butter), Lassi (Joghurtgetränk), Mist als Brennmaterial, Pflanzendünger, Milch",
+                "Fleisch, Milch, Leder, Wolle, Knochen",
+                "Butter, Käse, Sahne, Joghurt, Quark",
+                "Milch, Honig, Öl, Wasser, Salz"
+            ],
+            "answer": "Ghee (geklärte Butter), Lassi (Joghurtgetränk), Mist als Brennmaterial, Pflanzendünger, Milch"
+        },
+        {
+            "question": "Für welchen Gott steht der Elefant?",
+            "options": [
+                "Ganesha - Symbol für Glück, Weisheit und Neubeginn",
+                "Shiva - Symbol für Kraft und Ewigkeit",
+                "Seraswati - Symbol für Stolz und Schönheit",
+                "Vishnu - Symbol für Schutz"
+            ],
+            "answer": "Ganesha - Symbol für Glück, Weisheit und Neubeginn"
+        },
+        {
+            "question": "Für welchen Gott steht die Schlange?",
+            "options": [
+                "Shiva - Symbol für Kraft und Ewigkeit",
+                "Ganesha - Symbol für Glück und Weisheit",
+                "Seraswati - Symbol für Stolz und Schönheit",
+                "Brahma - Symbol für Schöpfung"
+            ],
+            "answer": "Shiva - Symbol für Kraft und Ewigkeit"
+        },
+        {
+            "question": "Für welchen Gott steht der Pfau?",
+            "options": [
+                "Seraswati - Symbol für Stolz und Schönheit",
+                "Shiva - Symbol für Kraft",
+                "Ganesha - Symbol für Glück",
+                "Krishna - Symbol für Liebe"
+            ],
+            "answer": "Seraswati - Symbol für Stolz und Schönheit"
+        },
+        {
+            "question": "Was bedeutet Kleidung im Hinduismus?",
+            "options": [
+                "Steht für Respekt gegenüber Gott und Tradition",
+                "Ist nur für religiöse Zeremonien wichtig",
+                "Muss immer weiß sein",
+                "Ist nicht wichtig"
+            ],
+            "answer": "Steht für Respekt gegenüber Gott und Tradition"
+        },
+        {
+            "question": "Was ist Salwar Kameez?",
+            "options": [
+                "Eine Kombination aus Hose und langem Oberteil",
+                "Ein Stoffstreifen für Frauen",
+                "Ein Hemd für Männer",
+                "Eine Art Jacke"
+            ],
+            "answer": "Eine Kombination aus Hose und langem Oberteil"
+        },
+        {
+            "question": "Warum werden Tiere im Hinduismus verehrt?",
+            "options": [
+                "Sie haben symbolische und religiöse Bedeutung",
+                "Sie sind besonders stark",
+                "Sie sind selten",
+                "Sie sind hübsch"
+            ],
+            "answer": "Sie haben symbolische und religiöse Bedeutung"
+        },
+        {
+            "question": "Was kann ein Sari über die Trägerin verraten?",
+            "options": [
+                "Die Herkunft der Frau",
+                "Ihr Alter",
+                "Ihren Beruf",
+                "Ihre Lieblingsspeise"
+            ],
+            "answer": "Die Herkunft der Frau"
+        },
+        {
+            "question": "Was gehört oft zu einem Nasenpiercing im Hinduismus?",
+            "options": [
+                "Eine Kette, die mit einem Ohrring verbunden ist",
+                "Ein Armband",
+                "Eine Halskette",
+                "Ein Ring"
+            ],
+            "answer": "Eine Kette, die mit einem Ohrring verbunden ist"
+        },
+        {
+            "question": "Wie lang ist ein typischer Kurta?",
+            "options": [
+                "Reicht bis zum Knie",
+                "Reicht bis zum Knöchel",
+                "Reicht bis zur Hüfte",
+                "Reicht bis zum Boden"
+            ],
+            "answer": "Reicht bis zum Knie"
+        },
+        {
+            "question": "Was wird im Hinduismus NICHT mit Tieren gemacht?",
+            "options": [
+                "Sie werden getötet oder gegessen",
+                "Sie werden verehrt",
+                "Sie haben religiöse Bedeutung",
+                "Sie gelten als heilig"
+            ],
+            "answer": "Sie werden getötet oder gegessen"
+        }
+    ]
+}
 
 # =========================================================
 # FUNKTIONEN
 # =========================================================
 
-def load_quizzes():
-    """Lädt verfügbare Quizze aus JSON-Dateien."""
-    if not os.path.exists(QUIZZES_DIR):
-        os.makedirs(QUIZZES_DIR)
+def ensure_quiz_exists():
+    """Stellt sicher, dass das Hinduismus-Quiz existiert."""
+    os.makedirs(QUIZZES_DIR, exist_ok=True)
+    quiz_path = os.path.join(QUIZZES_DIR, "hinduismus.json")
+    
+    if not os.path.exists(quiz_path):
+        with open(quiz_path, "w", encoding="utf-8") as f:
+            json.dump(HINDUISMUS_QUIZ, f, indent=4, ensure_ascii=False)
+
+
+def load_all_results():
+    """Lädt alle Quiz-Ergebnisse für das Leaderboard."""
+    if not os.path.exists(ANSWERS_DIR):
         return []
-    files = [f for f in os.listdir(QUIZZES_DIR) if f.endswith(".json")]
-    quizzes = []
-    for f in files:
-        with open(os.path.join(QUIZZES_DIR, f), "r", encoding="utf-8") as file:
+    
+    all_results = []
+    for filename in os.listdir(ANSWERS_DIR):
+        if filename.endswith(".json"):
+            username = filename[:-5]
+            path = os.path.join(ANSWERS_DIR, filename)
+            
             try:
-                data = json.load(file)
-                quizzes.append(data)
-            except Exception as e:
-                print(f"Fehler in {f}: {e}")
-    return quizzes
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    
+                if "runs" in data:
+                    for run in data["runs"]:
+                        all_results.append({
+                            "username": username,
+                            "run_id": run.get("run_id", "unknown"),
+                            "quiz_name": run.get("quiz_name", ""),
+                            "correct": run.get("correct", 0),
+                            "total": run.get("total", 0),
+                            "percentage": run.get("percentage", 0),
+                            "time_seconds": run.get("time_seconds", 0),
+                            "timestamp": run.get("timestamp", "")
+                        })
+            except:
+                pass
+    
+    return all_results
 
 
 def save_result(username, quiz_name, correct, total, time_seconds, run_id, detailed_answers):
-    """Speichert die Ergebnisse eines Quiz-Durchlaufs mit eindeutiger Run-ID."""
+    """Speichert die Ergebnisse eines Quiz-Durchlaufs."""
     os.makedirs(ANSWERS_DIR, exist_ok=True)
     path = os.path.join(ANSWERS_DIR, f"{username}.json")
     data = {"runs": []}
@@ -259,10 +472,8 @@ def save_result(username, quiz_name, correct, total, time_seconds, run_id, detai
             except:
                 pass
 
-    # Sicherstellen, dass "runs" existiert (Migration von altem Format)
     if "runs" not in data:
         data["runs"] = []
-        # Alte "quizzes" in "runs" migrieren, falls vorhanden
         if "quizzes" in data:
             for old_quiz in data["quizzes"]:
                 old_quiz["run_id"] = str(uuid.uuid4())[:8]
@@ -271,7 +482,6 @@ def save_result(username, quiz_name, correct, total, time_seconds, run_id, detai
                 data["runs"].append(old_quiz)
             del data["quizzes"]
 
-    # Neuen Run hinzufügen
     data["runs"].append({
         "run_id": run_id,
         "quiz_name": quiz_name,
@@ -287,13 +497,12 @@ def save_result(username, quiz_name, correct, total, time_seconds, run_id, detai
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 
-def initialize_quiz_session(quiz):
-    """Initialisiert eine neue Quiz-Session mit eindeutiger Run-ID."""
-    questions = quiz["questions"].copy()
+def initialize_quiz_session():
+    """Initialisiert eine neue Quiz-Session."""
+    questions = HINDUISMUS_QUIZ["questions"].copy()
     random.shuffle(questions)
     
-    # Generiere eindeutige Run-ID
-    run_id = str(uuid.uuid4())[:8]  # Kurze, lesbare ID
+    run_id = str(uuid.uuid4())[:8]
     
     st.session_state.quiz_active = True
     st.session_state.quiz_questions = questions
@@ -301,8 +510,9 @@ def initialize_quiz_session(quiz):
     st.session_state.quiz_score = 0
     st.session_state.quiz_answers = []
     st.session_state.quiz_start_time = time.time()
-    st.session_state.answered_current = False
     st.session_state.quiz_run_id = run_id
+    st.session_state.show_feedback = False
+    st.session_state.feedback_time = None
 
 
 def render_progress_bar(current, total):
@@ -321,7 +531,7 @@ def render_progress_bar(current, total):
 
 
 def render_current_question():
-    """Zeigt die aktuelle Frage an."""
+    """Zeigt die aktuelle Frage an mit automatischem Weiterklick."""
     idx = st.session_state.current_question_idx
     questions = st.session_state.quiz_questions
     
@@ -329,13 +539,20 @@ def render_current_question():
         render_quiz_results()
         return
     
+    # Auto-advance nach Feedback
+    if st.session_state.show_feedback and st.session_state.feedback_time:
+        elapsed = time.time() - st.session_state.feedback_time
+        if elapsed >= 2.5:  # 2.5 Sekunden warten
+            st.session_state.current_question_idx += 1
+            st.session_state.show_feedback = False
+            st.session_state.feedback_time = None
+            st.rerun()
+    
     question = questions[idx]
     total = len(questions)
     
-    # Progress Bar
     render_progress_bar(idx + 1, total)
     
-    # Question Card
     st.markdown(f"""
     <div class="question-card">
         <div class="question-number">Frage {idx + 1} von {total}</div>
@@ -343,39 +560,7 @@ def render_current_question():
     </div>
     """, unsafe_allow_html=True)
     
-    # Answer Options
-    if not st.session_state.answered_current:
-        options = question["options"].copy()
-        random.shuffle(options)
-        
-        st.markdown("<div style='margin: 2rem 0;'>", unsafe_allow_html=True)
-        cols = st.columns(2)
-        
-        for i, option in enumerate(options):
-            col = cols[i % 2]
-            with col:
-                if st.button(f"🔹 {option}", key=f"opt_{idx}_{i}", use_container_width=True):
-                    st.session_state.selected_answer = option
-                    st.session_state.answered_current = True
-                    
-                    # Check answer
-                    is_correct = option == question["answer"]
-                    if is_correct:
-                        st.session_state.quiz_score += 1
-                    
-                    st.session_state.quiz_answers.append({
-                        "question": question["question"],
-                        "selected": option,
-                        "correct": question["answer"],
-                        "is_correct": is_correct
-                    })
-                    
-                    st.rerun()
-        
-        st.markdown("</div>", unsafe_allow_html=True)
-    
-    else:
-        # Show feedback
+    if st.session_state.show_feedback:
         answer = st.session_state.quiz_answers[-1]
         
         if answer["is_correct"]:
@@ -392,19 +577,91 @@ def render_current_question():
             </div>
             """, unsafe_allow_html=True)
         
-        st.markdown("<div style='margin: 2rem 0;'>", unsafe_allow_html=True)
+        # Automatisches Weiterklicken nach 2.5 Sekunden
+        time.sleep(0.1)
+        st.rerun()
+    
+    else:
+        options = question["options"].copy()
+        random.shuffle(options)
         
-        if st.session_state.current_question_idx < len(st.session_state.quiz_questions) - 1:
-            if st.button("➡️ Nächste Frage", use_container_width=True, type="primary"):
-                st.session_state.current_question_idx += 1
-                st.session_state.answered_current = False
-                st.rerun()
-        else:
-            if st.button("🏁 Quiz beenden", use_container_width=True, type="primary"):
-                st.session_state.current_question_idx += 1
-                st.rerun()
+        st.markdown("<div style='margin: 2rem 0;'>", unsafe_allow_html=True)
+        cols = st.columns(2)
+        
+        for i, option in enumerate(options):
+            col = cols[i % 2]
+            with col:
+                if st.button(f"🔹 {option}", key=f"opt_{idx}_{i}", use_container_width=True):
+                    is_correct = option == question["answer"]
+                    if is_correct:
+                        st.session_state.quiz_score += 1
+                    
+                    st.session_state.quiz_answers.append({
+                        "question": question["question"],
+                        "selected": option,
+                        "correct": question["answer"],
+                        "is_correct": is_correct
+                    })
+                    
+                    st.session_state.show_feedback = True
+                    st.session_state.feedback_time = time.time()
+                    st.rerun()
         
         st.markdown("</div>", unsafe_allow_html=True)
+
+
+def render_leaderboard():
+    """Zeigt das Leaderboard mit allen Runs."""
+    st.markdown('<div class="leaderboard-card">', unsafe_allow_html=True)
+    st.markdown('<div class="leaderboard-title">🏆 Leaderboard</div>', unsafe_allow_html=True)
+    
+    all_results = load_all_results()
+    
+    if not all_results:
+        st.markdown('<p style="color: rgba(255,255,255,0.6); text-align: center;">Noch keine Ergebnisse vorhanden</p>', unsafe_allow_html=True)
+    else:
+        # Sortiere nach Prozentsatz (absteigend), dann nach Zeit (aufsteigend)
+        all_results.sort(key=lambda x: (-x["percentage"], x["time_seconds"]))
+        
+        for i, result in enumerate(all_results[:20], 1):  # Top 20
+            rank_class = ""
+            rank_emoji = f"{i}."
+            if i == 1:
+                rank_class = "gold"
+                rank_emoji = "🥇"
+            elif i == 2:
+                rank_class = "silver"
+                rank_emoji = "🥈"
+            elif i == 3:
+                rank_class = "bronze"
+                rank_emoji = "🥉"
+            
+            time_min = int(result["time_seconds"] // 60)
+            time_sec = int(result["time_seconds"] % 60)
+            
+            st.markdown(f"""
+            <div class="leaderboard-entry">
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                    <span class="leaderboard-rank {rank_class}">{rank_emoji}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 1.1rem;">{result['username']}</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">
+                            Run: {result['run_id']} | {result['quiz_name']}
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 1.3rem; font-weight: 700; color: #667eea;">
+                        {result['percentage']:.1f}%
+                    </div>
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">
+                        {result['correct']}/{result['total']} | {time_min}:{time_sec:02d}
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_quiz_results():
@@ -415,10 +672,9 @@ def render_quiz_results():
     percentage = (score / total) * 100
     run_id = st.session_state.quiz_run_id
     
-    # Save result mit detaillierten Antworten
     save_result(
         username,
-        st.session_state.current_quiz["title"],
+        HINDUISMUS_QUIZ["title"],
         score,
         total,
         time_taken,
@@ -426,7 +682,6 @@ def render_quiz_results():
         st.session_state.quiz_answers
     )
     
-    # Result display
     st.markdown(f"""
     <div class="result-card">
         <h1 style="color: white; margin: 0;">🎉 Quiz abgeschlossen!</h1>
@@ -437,7 +692,6 @@ def render_quiz_results():
     </div>
     """, unsafe_allow_html=True)
     
-    # Performance message
     if percentage == 100:
         st.balloons()
         st.success("🌟 Perfekt! Du hast alle Fragen richtig beantwortet!")
@@ -448,7 +702,6 @@ def render_quiz_results():
     else:
         st.warning("💪 Nicht aufgeben! Versuche es noch einmal!")
     
-    # Show detailed answers
     with st.expander("📋 Detaillierte Antworten anzeigen"):
         for i, answer in enumerate(st.session_state.quiz_answers, 1):
             status = "✅ Richtig" if answer["is_correct"] else "❌ Falsch"
@@ -460,18 +713,21 @@ def render_quiz_results():
             """)
             st.divider()
     
-    # Restart button
+    # Leaderboard anzeigen
+    st.markdown("---")
+    render_leaderboard()
+    
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🔄 Quiz wiederholen", use_container_width=True):
-            initialize_quiz_session(st.session_state.current_quiz)
+            initialize_quiz_session()
             st.rerun()
     
     with col2:
-        if st.button("📋 Neues Quiz wählen", use_container_width=True):
+        if st.button("🏠 Zurück zur Startseite", use_container_width=True):
             for key in ['quiz_active', 'quiz_questions', 'current_question_idx', 
                        'quiz_score', 'quiz_answers', 'quiz_start_time', 
-                       'answered_current', 'current_quiz', 'quiz_run_id']:
+                       'quiz_run_id', 'show_feedback', 'feedback_time']:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
@@ -481,17 +737,17 @@ def render_quiz_results():
 # HAUPTBEREICH
 # =========================================================
 
-# Check if quiz is active
+# Quiz-Datei sicherstellen
+ensure_quiz_exists()
+
 if st.session_state.get('quiz_active', False):
-    # Show quiz header with Run-ID
     st.markdown(f"""
     <div class="quiz-header">
-        <div class="quiz-title">🧩 {st.session_state.current_quiz['title']}</div>
+        <div class="quiz-title">🧩 {HINDUISMUS_QUIZ['title']}</div>
         <div class="run-id-badge">🆔 Run: {st.session_state.quiz_run_id}</div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Show timer
     if st.session_state.current_question_idx < len(st.session_state.quiz_questions):
         elapsed = int(time.time() - st.session_state.quiz_start_time)
         minutes = elapsed // 60
@@ -505,45 +761,31 @@ if st.session_state.get('quiz_active', False):
     render_current_question()
 
 else:
-    # Quiz selection screen
     st.markdown("""
     <div class="quiz-header">
-        <div class="quiz-title">🎯 Quiz Auswahl</div>
+        <div class="quiz-title">🕉️ Hinduismus Quiz</div>
     </div>
     """, unsafe_allow_html=True)
     
-    quizzes = load_quizzes()
-    
-    if not quizzes:
-        st.warning("⚠️ Noch keine Quizze gefunden. Lege im Ordner `/data/quizzes` JSON-Dateien an.")
-        st.stop()
-    
-    st.markdown('<div class="quiz-select-card">', unsafe_allow_html=True)
-    
-    quiz_titles = [q["title"] for q in quizzes]
-    selected_quiz_title = st.selectbox(
-        "Wähle ein Quiz:",
-        quiz_titles,
-        index=0,
-        label_visibility="collapsed"
-    )
-    
-    selected_quiz = next(q for q in quizzes if q["title"] == selected_quiz_title)
-    
-    # Show quiz info
-    num_questions = len(selected_quiz["questions"])
     st.markdown(f"""
-    <div style="color: rgba(255,255,255,0.7); margin: 1rem 0; font-size: 1.1rem;">
-        📝 Anzahl Fragen: {num_questions}<br>
-        🎯 Fragen werden in zufälliger Reihenfolge angezeigt<br>
-        ⏱️ Die Zeit wird automatisch gemessen<br>
-        🆔 Jeder Durchlauf erhält eine eindeutige Run-ID
+    <div style="background: rgba(255,255,255,0.05); border-radius: 20px; padding: 2rem; 
+                backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); margin: 2rem 0;">
+        <h2 style="color: white; text-align: center; margin-bottom: 1.5rem;">
+            📚 {HINDUISMUS_QUIZ['title']}
+        </h2>
+        <div style="color: rgba(255,255,255,0.7); margin: 1rem 0; font-size: 1.1rem;">
+            📝 Anzahl Fragen: {len(HINDUISMUS_QUIZ['questions'])}<br>
+            🎯 Fragen werden in zufälliger Reihenfolge angezeigt<br>
+            ⏱️ Die Zeit wird automatisch gemessen<br>
+            🆔 Jeder Durchlauf erhält eine eindeutige Run-ID<br>
+            ⚡ Nach jeder Antwort geht es automatisch weiter
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
     if st.button("🚀 Quiz starten", use_container_width=True, type="primary"):
-        st.session_state.current_quiz = selected_quiz
-        initialize_quiz_session(selected_quiz)
+        initialize_quiz_session()
         st.rerun()
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("---")
+    render_leaderboard()
