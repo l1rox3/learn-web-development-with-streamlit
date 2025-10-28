@@ -512,6 +512,7 @@ def initialize_quiz_session():
     st.session_state.quiz_start_time = time.time()
     st.session_state.quiz_run_id = run_id
     st.session_state.show_feedback = False
+    st.session_state.answer_locked = False
 
 
 def render_progress_bar(current, total):
@@ -571,6 +572,7 @@ def render_current_question():
         time.sleep(2)
         st.session_state.current_question_idx += 1
         st.session_state.show_feedback = False
+        st.session_state.answer_locked = False
         st.rerun()
     
     else:
@@ -583,20 +585,24 @@ def render_current_question():
         for i, option in enumerate(options):
             col = cols[i % 2]
             with col:
-                if st.button(f"🔹 {option}", key=f"opt_{idx}_{i}", use_container_width=True):
-                    is_correct = option == question["answer"]
-                    if is_correct:
-                        st.session_state.quiz_score += 1
-                    
-                    st.session_state.quiz_answers.append({
-                        "question": question["question"],
-                        "selected": option,
-                        "correct": question["answer"],
-                        "is_correct": is_correct
-                    })
-                    
-                    st.session_state.show_feedback = True
-                    st.rerun()
+                # Button nur anklickbar wenn Antwort noch nicht gegeben wurde
+                if st.button(f"🔹 {option}", key=f"opt_{idx}_{i}", use_container_width=True, disabled=st.session_state.answer_locked):
+                    if not st.session_state.answer_locked:
+                        st.session_state.answer_locked = True
+                        
+                        is_correct = option == question["answer"]
+                        if is_correct:
+                            st.session_state.quiz_score += 1
+                        
+                        st.session_state.quiz_answers.append({
+                            "question": question["question"],
+                            "selected": option,
+                            "correct": question["answer"],
+                            "is_correct": is_correct
+                        })
+                        
+                        st.session_state.show_feedback = True
+                        st.rerun()
         
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -718,7 +724,7 @@ def render_quiz_results():
         if st.button("🏠 Zurück zur Startseite", use_container_width=True):
             for key in ['quiz_active', 'quiz_questions', 'current_question_idx', 
                        'quiz_score', 'quiz_answers', 'quiz_start_time', 
-                       'quiz_run_id', 'show_feedback']:
+                       'quiz_run_id', 'show_feedback', 'answer_locked']:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
