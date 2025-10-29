@@ -40,22 +40,22 @@ if "username" not in st.session_state or not st.session_state.username:
 username = st.session_state.username
 
 # =========================================================
-# CUSTOM CSS - SCHLICHTES SCHWARZ-WEISS DESIGN
+# CUSTOM CSS - GRAUER HINTERGRUND
 # =========================================================
 st.markdown("""
 <style>
     .main {
-        background-color: #000000;
+        background-color: #2b2b2b;
         color: #ffffff;
     }
     
     .quiz-header {
-        background-color: #111111;
+        background-color: #3a3a3a;
         padding: 2rem;
         border-radius: 10px;
         text-align: center;
         margin-bottom: 2rem;
-        border: 1px solid #333333;
+        border: 1px solid #555555;
     }
     
     .quiz-title {
@@ -66,11 +66,11 @@ st.markdown("""
     }
     
     .progress-container {
-        background: #111111;
+        background: #3a3a3a;
         border-radius: 8px;
         padding: 1.5rem;
         margin-bottom: 2rem;
-        border: 1px solid #333333;
+        border: 1px solid #555555;
     }
     
     .progress-bar {
@@ -88,15 +88,15 @@ st.markdown("""
     }
     
     .question-card {
-        background: #111111;
+        background: #3a3a3a;
         border-radius: 10px;
         padding: 2rem;
         margin: 2rem 0;
-        border: 1px solid #333333;
+        border: 1px solid #555555;
     }
     
     .question-number {
-        color: #888888;
+        color: #bbbbbb;
         font-size: 0.9rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -118,31 +118,31 @@ st.markdown("""
         border-radius: 8px !important;
         margin: 0.3rem 0 !important;
         transition: all 0.2s ease !important;
-        background: #111111 !important;
-        border: 1px solid #333333 !important;
+        background: #3a3a3a !important;
+        border: 1px solid #555555 !important;
         color: white !important;
         font-weight: 500 !important;
         text-align: left !important;
     }
     
     div[data-testid="stButton"] button:hover {
-        background: #222222 !important;
-        border-color: #555555 !important;
+        background: #4a4a4a !important;
+        border-color: #777777 !important;
     }
     
     div[data-testid="stButton"] button:disabled {
-        background: #1a1a1a !important;
+        background: #2a2a2a !important;
         border-color: #444444 !important;
         color: #666666 !important;
     }
     
     .result-card {
-        background: #111111;
+        background: #3a3a3a;
         border-radius: 10px;
         padding: 2.5rem;
         text-align: center;
         margin: 2rem 0;
-        border: 1px solid #333333;
+        border: 1px solid #555555;
     }
     
     .result-score {
@@ -159,38 +159,38 @@ st.markdown("""
     }
     
     .run-id-badge {
-        background: #222222;
+        background: #4a4a4a;
         padding: 0.5rem 1rem;
         border-radius: 6px;
-        color: #888888;
+        color: #bbbbbb;
         font-size: 0.8rem;
         display: inline-block;
         margin-top: 1rem;
         font-family: monospace;
-        border: 1px solid #333333;
+        border: 1px solid #555555;
     }
     
     .feedback-correct {
-        background: #1a2a1a;
+        background: #2a3a2a;
         padding: 1.2rem;
         border-radius: 8px;
         color: #4CAF50;
         font-size: 1.1rem;
         margin: 1rem 0;
         font-weight: 600;
-        border: 1px solid #2d4a2d;
+        border: 1px solid #3d553d;
         animation: slideIn 0.3s ease;
     }
     
     .feedback-wrong {
-        background: #2a1a1a;
+        background: #3a2a2a;
         padding: 1.2rem;
         border-radius: 8px;
         color: #f44336;
         font-size: 1.1rem;
         margin: 1rem 0;
         font-weight: 600;
-        border: 1px solid #4a2d2d;
+        border: 1px solid #553d3d;
         animation: slideIn 0.3s ease;
     }
     
@@ -200,22 +200,22 @@ st.markdown("""
     }
     
     .timer-display {
-        background: #111111;
+        background: #3a3a3a;
         padding: 1rem 1.5rem;
         border-radius: 8px;
         color: white;
         font-size: 1.1rem;
         font-weight: 600;
         text-align: center;
-        border: 1px solid #333333;
+        border: 1px solid #555555;
         margin-bottom: 1rem;
     }
     
     .leaderboard-card {
-        background: #111111;
+        background: #3a3a3a;
         border-radius: 10px;
         padding: 1.5rem;
-        border: 1px solid #333333;
+        border: 1px solid #555555;
         margin: 2rem 0;
     }
     
@@ -228,7 +228,7 @@ st.markdown("""
     }
     
     .leaderboard-entry {
-        background: #1a1a1a;
+        background: #4a4a4a;
         padding: 1rem 1.2rem;
         border-radius: 6px;
         margin: 0.3rem 0;
@@ -236,7 +236,7 @@ st.markdown("""
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border: 1px solid #333333;
+        border: 1px solid #555555;
     }
     
     .leaderboard-rank {
@@ -252,12 +252,12 @@ st.markdown("""
     
     .option-correct {
         border-left: 4px solid #4CAF50 !important;
-        background: #1a2a1a !important;
+        background: #2a3a2a !important;
     }
     
     .option-wrong {
         border-left: 4px solid #f44336 !important;
-        background: #2a1a1a !important;
+        background: #3a2a2a !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -552,7 +552,7 @@ def initialize_quiz_session():
     st.session_state.quiz_start_time = time.time()
     st.session_state.quiz_run_id = run_id
     st.session_state.show_feedback = False
-    st.session_state.answered_questions = set()  # KORREKTUR: Hier wird answered_questions initialisiert
+    st.session_state.answered_questions = set()
 
 
 def render_progress_bar(current, total):
@@ -560,7 +560,7 @@ def render_progress_bar(current, total):
     progress = (current / total) * 100
     st.markdown(f"""
     <div class="progress-container">
-        <div style="background: #333333; border-radius: 4px; overflow: hidden;">
+        <div style="background: #555555; border-radius: 4px; overflow: hidden;">
             <div class="progress-bar" style="width: {progress}%;"></div>
         </div>
         <div class="progress-text">
@@ -579,7 +579,7 @@ def render_current_question():
         render_quiz_results()
         return
     
-    # KORREKTUR: Sicherstellen, dass answered_questions existiert
+    # Sicherstellen, dass answered_questions existiert
     if 'answered_questions' not in st.session_state:
         st.session_state.answered_questions = set()
     
@@ -622,7 +622,9 @@ def render_current_question():
             st.rerun()
     
     else:
+        # OPTIONEN MISCHEN - damit die richtige Antwort nicht immer oben links steht
         options = question["options"].copy()
+        random.shuffle(options)
         
         # Wenn Frage bereits beantwortet, zeige die korrekte Antwort an
         if question_already_answered:
@@ -637,7 +639,7 @@ def render_current_question():
             
             if user_answer:
                 st.markdown(f"""
-                <div style="margin: 1rem 0; padding: 1rem; background: #1a1a1a; border-radius: 8px; border: 1px solid #333333;">
+                <div style="margin: 1rem 0; padding: 1rem; background: #4a4a4a; border-radius: 8px; border: 1px solid #555555;">
                     <strong>Deine Antwort:</strong> {user_answer['selected']}<br>
                     <strong>Korrekte Antwort:</strong> {user_answer['correct']}<br>
                     <strong>Status:</strong> {"✅ Richtig" if user_answer['is_correct'] else "❌ Falsch"}
@@ -684,7 +686,7 @@ def render_leaderboard():
     all_results = load_all_results()
     
     if not all_results:
-        st.markdown('<p style="color: #666666; text-align: center;">Noch keine Ergebnisse vorhanden</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color: #bbbbbb; text-align: center;">Noch keine Ergebnisse vorhanden</p>', unsafe_allow_html=True)
     else:
         # Sortiere nach Prozentsatz (absteigend), dann nach Zeit (aufsteigend)
         all_results.sort(key=lambda x: (-x["percentage"], x["time_seconds"]))
@@ -711,7 +713,7 @@ def render_leaderboard():
                     <span class="leaderboard-rank {rank_class}">{rank_emoji}</span>
                     <div style="flex: 1;">
                         <div style="font-weight: 600; font-size: 1rem;">{result['username']}</div>
-                        <div style="font-size: 0.8rem; color: #666666;">
+                        <div style="font-size: 0.8rem; color: #bbbbbb;">
                             {result['quiz_name']} • {result['run_id']}
                         </div>
                     </div>
@@ -720,7 +722,7 @@ def render_leaderboard():
                     <div style="font-size: 1.1rem; font-weight: 700; color: #ffffff;">
                         {result['percentage']:.1f}%
                     </div>
-                    <div style="font-size: 0.8rem; color: #666666;">
+                    <div style="font-size: 0.8rem; color: #bbbbbb;">
                         {result['correct']}/{result['total']} • {time_min}:{time_sec:02d}
                     </div>
                 </div>
@@ -833,14 +835,15 @@ else:
     """, unsafe_allow_html=True)
     
     st.markdown(f"""
-    <div style="background: #111111; border-radius: 10px; padding: 2rem; 
-                border: 1px solid #333333; margin: 2rem 0;">
+    <div style="background: #3a3a3a; border-radius: 10px; padding: 2rem; 
+                border: 1px solid #555555; margin: 2rem 0;">
         <h2 style="color: white; text-align: center; margin-bottom: 1.5rem;">
             📚 {HINDUISMUS_QUIZ['title']}
         </h2>
         <div style="color: #cccccc; margin: 1rem 0; font-size: 1rem;">
             📝 <strong>Anzahl Fragen:</strong> {len(HINDUISMUS_QUIZ['questions'])}<br>
             🎯 <strong>Zufällige Reihenfolge:</strong> Ja<br>
+            🔀 <strong>Antworten gemischt:</strong> Ja<br>
             ⏱️ <strong>Zeitmessung:</strong> Automatisch<br>
             🆔 <strong>Run-ID:</strong> Eindeutig pro Durchlauf<br>
             🔒 <strong>Beantwortete Fragen:</strong> Können nicht erneut beantwortet werden
