@@ -40,7 +40,7 @@ LOG.setLevel(logging.INFO)
 
 ANSWERS_DIR = "./data/answers"
 SETTINGS_FILE = "./data/settings.json"
-PDF_PATH = "./data/data.pdf"
+PDF_PATH = "data.pdf"
 
 # =========================================================
 # SESSION VALIDIERUNG
