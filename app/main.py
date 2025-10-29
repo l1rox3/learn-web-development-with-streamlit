@@ -563,7 +563,7 @@ def render_footer():
         <p class="footer-text">
             Created by <a href="#" class="footer-link">l1rox3</a> • 2025 
             | Made for joyful learning xdxd 
-            | <span style="color: {t['accent']};">Quiz App v</span>
+            | <span style="color: {t['accent']};">Quiz App v3.0</span>
         </p>
     </div>
     """, unsafe_allow_html=True)
