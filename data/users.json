@@ -40,7 +40,7 @@
     "last_login": "2025-10-28T20:26:54.174048",
     "using_default": true,
     "salt": "f5f8d5b6e1cb5981ac7afa75434c3332",
-    "failed_attempts": 0,
+    "failed_attempts": 1,
     "locked_until": null
   }
 }
