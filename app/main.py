@@ -587,7 +587,7 @@ def show_login() -> None:
     username = st.text_input("Benutzername", key="login_user", placeholder="dein.name")
     password = st.text_input("Passwort", type="password", key="login_pass", placeholder="••••••••")
 
-    if st.button("🚀 Anmelden", use_container_width=True):
+    if st.button("Anmelden", use_container_width=True):
         if not username or not password:
             st.warning("Bitte alle Felder ausfüllen")
             return
