@@ -415,6 +415,191 @@ def apply_theme() -> None:
     st.markdown(css, unsafe_allow_html=True)
 
 
+HINDUISMUS_QUIZ = {
+    "title": "Kleidung und Tiere im Hinduismus",
+    "questions": [
+        {
+            "question": "Welche Bedeutung hat Kleidung im Hinduismus?",
+            "options": [
+                "Sie steht für Respekt gegenüber Gott und Tradition",
+                "Sie ist nur für religiöse Führer wichtig",
+                "Sie hat keine religiöse Bedeutung",
+                "Sie muss immer weiß sein"
+            ],
+            "answer": "Sie steht für Respekt gegenüber Gott und Tradition"
+        },
+        {
+            "question": "Wann spielt Kleidung im Hinduismus eine besonders wichtige Rolle?",
+            "options": [
+                "Bei Festen und in Tempeln",
+                "Nur bei Hochzeiten",
+                "Nur beim Gebet zu Hause",
+                "Nie, Kleidung ist unwichtig"
+            ],
+            "answer": "Bei Festen und in Tempeln"
+        },
+        {
+            "question": "Gibt es im Hinduismus feste Kleidungsvorschriften?",
+            "options": [
+                "Nein, es gibt keine festen Vorschriften",
+                "Ja, alle müssen Weiß tragen",
+                "Ja, nur Männer tragen traditionelle Kleidung",
+                "Ja, Kleidung ist streng vorgeschrieben"
+            ],
+            "answer": "Nein, es gibt keine festen Vorschriften"
+        },
+        {
+            "question": "Was ist ein Sari?",
+            "options": [
+                "Ein ca. 6m langer Stoffstreifen, mehrfach um den Körper gewickelt",
+                "Ein weites Hemd für Männer",
+                "Eine Kombination aus Hose und Oberteil",
+                "Ein langes Jackett mit Stehkragen"
+            ],
+            "answer": "Ein ca. 6m langer Stoffstreifen, mehrfach um den Körper gewickelt"
+        },
+        {
+            "question": "Was kann ein Sari über die Trägerin verraten?",
+            "options": [
+                "Die Herkunft der Frau",
+                "Ihr Alter",
+                "Ihren Familienstand",
+                "Ihre Religion"
+            ],
+            "answer": "Die Herkunft der Frau"
+        },
+        {
+            "question": "Was gehört oft zu einem Nasenpiercing im Hinduismus?",
+            "options": [
+                "Eine Kette, die mit einem Ohrring verbunden ist",
+                "Ein Armband",
+                "Ein Stirnband",
+                "Ein Ring am Finger"
+            ],
+            "answer": "Eine Kette, die mit einem Ohrring verbunden ist"
+        },
+        {
+            "question": "Was ist ein Kurta?",
+            "options": [
+                "Ein weites, langes Hemd für Männer ohne Kragen",
+                "Ein Tuch für den Kopf",
+                "Ein Rock für Frauen",
+                "Eine kurze Jacke"
+            ],
+            "answer": "Ein weites, langes Hemd für Männer ohne Kragen"
+        },
+        {
+            "question": "Wie lang ist ein typischer Kurta?",
+            "options": [
+                "Er reicht bis zum Knie",
+                "Er reicht bis zur Hüfte",
+                "Er reicht bis zum Boden",
+                "Er endet an der Taille"
+            ],
+            "answer": "Er reicht bis zum Knie"
+        },
+        {
+            "question": "Was ist ein Salwar Kameez?",
+            "options": [
+                "Eine Kombination aus Hose und langem Oberteil",
+                "Ein Stoffstreifen für Frauen",
+                "Ein Hemd für Männer",
+                "Eine Jacke mit Kragen"
+            ],
+            "answer": "Eine Kombination aus Hose und langem Oberteil"
+        },
+        {
+            "question": "Was ist ein Dhoti?",
+            "options": [
+                "Ein langes Stück Stoff, in der Taille zusammengeknotet",
+                "Ein Sari für Männer",
+                "Eine Kombination aus Hose und Jacke",
+                "Ein Stirntuch"
+            ],
+            "answer": "Ein langes Stück Stoff, in der Taille zusammengeknotet"
+        },
+        {
+            "question": "Was ist ein Sherwani?",
+            "options": [
+                "Ein langes Jackett mit Stehkragen, das über dem Dhoti getragen wird",
+                "Ein leichter Sommermantel",
+                "Ein traditioneller Hut",
+                "Ein religiöser Schal"
+            ],
+            "answer": "Ein langes Jackett mit Stehkragen, das über dem Dhoti getragen wird"
+        },
+        {
+            "question": "Welche Rolle spielen Tiere im Hinduismus?",
+            "options": [
+                "Sie gelten als heilig und werden verehrt",
+                "Sie werden geopfert",
+                "Sie sind bedeutungslos",
+                "Sie dienen nur als Arbeitstiere"
+            ],
+            "answer": "Sie gelten als heilig und werden verehrt"
+        },
+        {
+            "question": "Warum werden Tiere im Hinduismus verehrt?",
+            "options": [
+                "Weil sie symbolische und religiöse Bedeutung haben",
+                "Weil sie selten sind",
+                "Weil sie gefährlich sind",
+                "Weil sie schön aussehen"
+            ],
+            "answer": "Weil sie symbolische und religiöse Bedeutung haben"
+        },
+        {
+            "question": "Was wird im Hinduismus NICHT mit Tieren gemacht?",
+            "options": [
+                "Sie werden getötet oder gegessen",
+                "Sie werden verehrt",
+                "Sie gelten als heilig",
+                "Sie haben religiöse Bedeutung"
+            ],
+            "answer": "Sie werden getötet oder gegessen"
+        },
+        {
+            "question": "Welche fünf Gaben liefert die heilige Kuh?",
+            "options": [
+                "Ghee, Lassi, Mist, Pflanzendünger, Urin",
+                "Milch, Butter, Käse, Joghurt, Sahne",
+                "Honig, Öl, Milch, Wasser, Salz",
+                "Fleisch, Leder, Knochen, Fell, Milch"
+            ],
+            "answer": "Ghee, Lassi, Mist, Pflanzendünger, Urin"
+        },
+        {
+            "question": "Für welchen Gott steht der Elefant?",
+            "options": [
+                "Ganesha - Symbol für Glück, Weisheit und Neubeginn",
+                "Shiva - Symbol für Kraft und Ewigkeit",
+                "Vishnu - Symbol für Schutz",
+                "Brahma - Symbol für Schöpfung"
+            ],
+            "answer": "Ganesha - Symbol für Glück, Weisheit und Neubeginn"
+        },
+        {
+            "question": "Für welchen Gott steht die Schlange?",
+            "options": [
+                "Shiva - Symbol für Kraft und Ewigkeit",
+                "Ganesha - Symbol für Glück und Neubeginn",
+                "Vishnu - Symbol für Schutz",
+                "Seraswati - Symbol für Schönheit"
+            ],
+            "answer": "Shiva - Symbol für Kraft und Ewigkeit"
+        },
+        {
+            "question": "Für welchen Gott steht der Pfau?",
+            "options": [
+                "Seraswati - Symbol für Stolz und Schönheit",
+                "Ganesha - Symbol für Glück und Neubeginn",
+                "Shiva - Symbol für Kraft",
+                "Vishnu - Symbol für Schutz"
+            ],
+            "answer": "Seraswati - Symbol für Stolz und Schönheit"
+        }
+    ]
+}
 
 # =========================================================
 # SESSION INIT
