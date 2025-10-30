@@ -1,0 +1,137 @@
+{
+  "username": "susi",
+  "score": 13,
+  "total": 18,
+  "percentage": 72.22,
+  "time_taken": 164.86,
+  "avg_time_per_question": 9.16,
+  "timestamp": "2025-10-30T11:35:32.183679",
+  "answers": [
+    {
+      "question": "Welche Bedeutung hat Kleidung im Hinduismus?",
+      "selected": "Sie steht für Respekt gegenüber Gott und Tradition",
+      "correct": "Sie steht für Respekt gegenüber Gott und Tradition",
+      "is_correct": true,
+      "time": 8.47
+    },
+    {
+      "question": "Wann spielt Kleidung im Hinduismus eine besonders wichtige Rolle?",
+      "selected": "Bei Festen und in Tempeln",
+      "correct": "Bei Festen und in Tempeln",
+      "is_correct": true,
+      "time": 4.9
+    },
+    {
+      "question": "Gibt es im Hinduismus feste Kleidungsvorschriften?",
+      "selected": "Nein, es gibt keine festen Vorschriften",
+      "correct": "Nein, es gibt keine festen Vorschriften",
+      "is_correct": true,
+      "time": 12.03
+    },
+    {
+      "question": "Was ist ein Sari?",
+      "selected": "Ein ca. 6m langer Stoffstreifen, mehrfach um den Körper gewickelt",
+      "correct": "Ein ca. 6m langer Stoffstreifen, mehrfach um den Körper gewickelt",
+      "is_correct": true,
+      "time": 5.95
+    },
+    {
+      "question": "Was kann ein Sari über die Trägerin verraten?",
+      "selected": "Ihre Religion",
+      "correct": "Die Herkunft der Frau",
+      "is_correct": false,
+      "time": 8.48
+    },
+    {
+      "question": "Was gehört oft zu einem Nasenpiercing im Hinduismus?",
+      "selected": "Eine Kette, die mit einem Ohrring verbunden ist",
+      "correct": "Eine Kette, die mit einem Ohrring verbunden ist",
+      "is_correct": true,
+      "time": 6.08
+    },
+    {
+      "question": "Was ist ein Kurta?",
+      "selected": "Ein weites, langes Hemd für Männer ohne Kragen",
+      "correct": "Ein weites, langes Hemd für Männer ohne Kragen",
+      "is_correct": true,
+      "time": 6.74
+    },
+    {
+      "question": "Wie lang ist ein typischer Kurta?",
+      "selected": "Er reicht bis zum Knie",
+      "correct": "Er reicht bis zum Knie",
+      "is_correct": true,
+      "time": 9.7
+    },
+    {
+      "question": "Was ist ein Salwar Kameez?",
+      "selected": "Eine Kombination aus Hose und langem Oberteil",
+      "correct": "Eine Kombination aus Hose und langem Oberteil",
+      "is_correct": true,
+      "time": 6.82
+    },
+    {
+      "question": "Was ist ein Dhoti?",
+      "selected": "Ein Stirntuch",
+      "correct": "Ein langes Stück Stoff, in der Taille zusammengeknotet",
+      "is_correct": false,
+      "time": 7.11
+    },
+    {
+      "question": "Was ist ein Sherwani?",
+      "selected": "Ein langes Jackett mit Stehkragen, das über dem Dhoti getragen wird",
+      "correct": "Ein langes Jackett mit Stehkragen, das über dem Dhoti getragen wird",
+      "is_correct": true,
+      "time": 6.17
+    },
+    {
+      "question": "Welche Rolle spielen Tiere im Hinduismus?",
+      "selected": "Sie gelten als heilig und werden verehrt",
+      "correct": "Sie gelten als heilig und werden verehrt",
+      "is_correct": true,
+      "time": 6.0
+    },
+    {
+      "question": "Warum werden Tiere im Hinduismus verehrt?",
+      "selected": "Weil sie symbolische und religiöse Bedeutung haben",
+      "correct": "Weil sie symbolische und religiöse Bedeutung haben",
+      "is_correct": true,
+      "time": 6.1
+    },
+    {
+      "question": "Was wird im Hinduismus NICHT mit Tieren gemacht?",
+      "selected": "Sie werden getötet oder gegessen",
+      "correct": "Sie werden getötet oder gegessen",
+      "is_correct": true,
+      "time": 9.9
+    },
+    {
+      "question": "Welche fünf Gaben liefert die heilige Kuh?",
+      "selected": "Fleisch, Leder, Knochen, Fell, Milch",
+      "correct": "Ghee, Lassi, Mist, Pflanzendünger, Urin",
+      "is_correct": false,
+      "time": 26.01
+    },
+    {
+      "question": "Für welchen Gott steht der Elefant?",
+      "selected": "Vishnu - Symbol für Schutz",
+      "correct": "Ganesha - Symbol für Glück, Weisheit und Neubeginn",
+      "is_correct": false,
+      "time": 10.68
+    },
+    {
+      "question": "Für welchen Gott steht die Schlange?",
+      "selected": "Seraswati - Symbol für Schönheit",
+      "correct": "Shiva - Symbol für Kraft und Ewigkeit",
+      "is_correct": false,
+      "time": 8.24
+    },
+    {
+      "question": "Für welchen Gott steht der Pfau?",
+      "selected": "Seraswati - Symbol für Stolz und Schönheit",
+      "correct": "Seraswati - Symbol für Stolz und Schönheit",
+      "is_correct": true,
+      "time": 6.21
+    }
+  ]
+}
