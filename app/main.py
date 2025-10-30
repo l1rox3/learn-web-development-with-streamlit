@@ -416,7 +416,10 @@ def apply_theme() -> None:
 # =========================================================
 # QUIZ FUNKTIONEN
 # =========================================================
-
+def navigate_to_quiz():
+    """Navigiert zur Quiz-Seite mit Benutzername als Parameter"""
+    st.query_params = {"user": st.session_state.username}
+    st.switch_page("pages/quizzes.py")
 # =========================================================
 # SESSION INIT
 # =========================================================
