@@ -20,6 +20,7 @@ import os
 import subprocess
 import threading
 import time
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import streamlit as st
@@ -688,31 +689,31 @@ def show_leaderboard():
     """Zeigt das Leaderboard aus quizzes.py"""
     leaderboard = get_leaderboard_data()
     
-    if leaderboard.empty if hasattr(leaderboard, 'empty') else not leaderboard:
+    if not leaderboard:
         st.info("Noch keine Ergebnisse vorhanden. Sei der Erste!")
         return
 
     # Top 3
-    for idx, row in enumerate(leaderboard[:3]):
+    for idx, entry in enumerate(leaderboard[:3]):
         medal = ["🥇", "🥈", "🥉"][idx]
         st.markdown(f"""
         <div class="stats-card" style="margin: 1rem 0; padding: 2rem;">
-            <h2 style="font-size: 2rem; margin-bottom: 1rem;">{medal} {row['username']}</h2>
+            <h2 style="font-size: 2rem; margin-bottom: 1rem;">{medal} {entry['username']}</h2>
             <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
                 <div>
-                    <div class="stat-value">{row['score']}</div>
+                    <div class="stat-value">{entry['score']}</div>
                     <div class="stat-label">Punkte</div>
                 </div>
                 <div>
-                    <div class="stat-value">{row['percentage']:.1f}%</div>
+                    <div class="stat-value">{entry['percentage']:.1f}%</div>
                     <div class="stat-label">Richtig</div>
                 </div>
                 <div>
-                    <div class="stat-value">{row['time_taken']:.1f}s</div>
+                    <div class="stat-value">{entry['time_taken']:.1f}s</div>
                     <div class="stat-label">Gesamtzeit</div>
                 </div>
                 <div>
-                    <div class="stat-value">{row['avg_time_per_question']:.1f}s</div>
+                    <div class="stat-value">{entry['avg_time_per_question']:.1f}s</div>
                     <div class="stat-label">Ø pro Frage</div>
                 </div>
             </div>
@@ -722,19 +723,19 @@ def show_leaderboard():
     # Rest of leaderboard
     if len(leaderboard) > 3:
         st.markdown("### Weitere Spieler")
-        for idx, row in enumerate(leaderboard[3:], 4):
+        for idx, entry in enumerate(leaderboard[3:], 4):
             st.markdown(f"""
             <div class="leaderboard-item">
                 <div style="display:flex;align-items:center;gap:1.5rem;flex:1">
                     <div class="leaderboard-rank">#{idx}</div>
                     <div>
-                        <div style="font-weight:700;font-size:1.1rem">{row['username']}</div>
+                        <div style="font-weight:700;font-size:1.1rem">{entry['username']}</div>
                     </div>
                 </div>
                 <div style="text-align:right">
-                    <div style="font-weight:700;font-size:1.3rem;color:#667eea">{row['percentage']:.1f}%</div>
+                    <div style="font-weight:700;font-size:1.3rem;color:#667eea">{entry['percentage']:.1f}%</div>
                     <div style="font-size:0.9rem;color:rgba(255,255,255,0.6)">
-                        🎯 {row['score']}/{row.get('total', '?')} | ⏱️ {format_time(row['time_taken'])}
+                        🎯 {entry['score']}/{entry.get('total', '?')} | ⏱️ {format_time(entry['time_taken'])}
                     </div>
                 </div>
             </div>
