@@ -42,5 +42,16 @@
     "salt": "f5f8d5b6e1cb5981ac7afa75434c3332",
     "failed_attempts": 0,
     "locked_until": null
+  },
+  "l1rox3": {
+    "password_hash": "978c449f2ecf151cb498138af6d1ed07c7142def00867a6227356a0e842ea5fe",
+    "role": "user",
+    "active": true,
+    "created_at": "2025-10-30T07:18:05.055601",
+    "last_login": "2025-10-30T07:18:05.055608",
+    "using_default": true,
+    "salt": "a08d8283c2695f2535304b8ade382d44",
+    "failed_attempts": 0,
+    "locked_until": null
   }
 }
