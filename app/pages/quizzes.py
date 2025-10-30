@@ -13,7 +13,7 @@ import sys
 sys.path.append('.')
 from pages.auth import AuthManager
 
-# Quiz Daten (gleich wie vorher)
+# Quiz Daten
 HINDUISMUS_QUIZ = {
     "title": "Kleidung und Tiere im Hinduismus",
     "questions": [
@@ -200,42 +200,17 @@ HINDUISMUS_QUIZ = {
     ]
 }
 
-
-# Themes (gleich wie vorher)
-THEMES: Dict[str, Dict[str, str]] = {
-    "Purple Dream": {
-        "name": "Purple Dream",
-        "bg": "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
-        "surface": "rgba(255,255,255,0.05)",
-        "border": "rgba(255,255,255,0.1)",
-        "text": "#ffffff",
-        "text_secondary": "rgba(255,255,255,0.7)",
-        "accent": "#667eea",
-        "accent_hover": "#764ba2",
-        "card_gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    },
-    "Ocean Blue": {
-        "name": "Ocean Blue",
-        "bg": "linear-gradient(135deg, #0a192f 0%, #112240 50%, #1a365d 100%)",
-        "surface": "rgba(255,255,255,0.05)",
-        "border": "rgba(255,255,255,0.1)",
-        "text": "#ffffff",
-        "text_secondary": "rgba(255,255,255,0.7)",
-        "accent": "#3b82f6",
-        "accent_hover": "#60a5fa",
-        "card_gradient": "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-    },
-    "Dark Minimal": {
-        "name": "Dark Minimal",
-        "bg": "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%)",
-        "surface": "rgba(255,255,255,0.05)",
-        "border": "rgba(255,255,255,0.1)",
-        "text": "#ffffff",
-        "text_secondary": "rgba(255,255,255,0.6)",
-        "accent": "#ffffff",
-        "accent_hover": "#e5e5e5",
-        "card_gradient": "linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%)",
-    },
+# Theme
+THEME = {
+    "name": "Purple Dream",
+    "bg": "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
+    "surface": "rgba(255,255,255,0.05)",
+    "border": "rgba(255,255,255,0.1)",
+    "text": "#ffffff",
+    "text_secondary": "rgba(255,255,255,0.7)",
+    "accent": "#667eea",
+    "accent_hover": "#764ba2",
+    "card_gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
 }
 
 # Page config
@@ -253,40 +228,8 @@ def get_auth_manager():
 
 auth_manager = get_auth_manager()
 
-# Helper functions for settings
-def load_settings() -> Dict:
-    """Lädt die Theme-Einstellungen aus main.py"""
-    settings_file = Path("./data/settings.json")
-    if settings_file.exists():
-        try:
-            with open(settings_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except:
-            pass
-    return {"current_theme": "Dark Minimal", "custom_theme": None}
-
-def save_settings(theme_name: str):
-    """Speichert die Theme-Einstellungen (kompatibel mit main.py)"""
-    data_dir = Path("./data")
-    data_dir.mkdir(parents=True, exist_ok=True)
-    
-    settings = {
-        "current_theme": theme_name,
-        "custom_theme": None
-    }
-    
-    with open(data_dir / "settings.json", 'w', encoding='utf-8') as f:
-        json.dump(settings, f, ensure_ascii=False, indent=2)
-
 # Session State Initialisierung
 def initialize_session_state():
-    """Initialisiert alle benötigten Session-State-Variablen"""
-    # Theme aus settings laden
-    if 'theme' not in st.session_state:
-        settings = load_settings()
-        st.session_state.theme = settings.get('current_theme', 'Dark Minimal')
-    
-    # Quiz-spezifische Daten
     if 'quiz_data' not in st.session_state:
         st.session_state.quiz_data = {
             'current_question': 0,
@@ -297,22 +240,17 @@ def initialize_session_state():
             'shuffled_options': []
         }
     
-    # Aktuelle Seite
     if 'page' not in st.session_state:
         st.session_state.page = 'start'
     
-    # Benutzername aus Query Parameters oder Session State
     if 'username' not in st.session_state:
-        # Versuche Benutzernamen aus Query Parameters zu lesen
         query_params = st.query_params
         if 'user' in query_params:
             st.session_state.username = query_params['user']
         else:
             st.session_state.username = None
 
-# Helper functions
 def save_result(username: str, score: int, total: int, time_taken: float, answers: List[Dict]):
-    """Speichert die Quiz-Ergebnisse"""
     data_dir = Path("./data/answers")
     data_dir.mkdir(parents=True, exist_ok=True)
     
@@ -332,7 +270,6 @@ def save_result(username: str, score: int, total: int, time_taken: float, answer
         json.dump(result, f, ensure_ascii=False, indent=2)
 
 def load_all_results() -> List[Dict]:
-    """Lädt alle gespeicherten Ergebnisse"""
     data_dir = Path("./data/answers")
     if not data_dir.exists():
         return []
@@ -347,38 +284,34 @@ def load_all_results() -> List[Dict]:
     return results
 
 def get_leaderboard_data() -> pd.DataFrame:
-    """Erstellt Leaderboard-Daten"""
     results = load_all_results()
     if not results:
         return pd.DataFrame()
     
     df = pd.DataFrame(results)
-    # Gruppiere nach Benutzername und nehme bestes Ergebnis
     leaderboard = df.loc[df.groupby('username')['score'].idxmax()]
     leaderboard = leaderboard.sort_values(['score', 'time_taken'], ascending=[False, True])
     return leaderboard[['username', 'score', 'percentage', 'time_taken', 'avg_time_per_question']]
 
-def apply_theme(theme_name: str):
-    """Wendet das gewählte Theme an"""
-    theme = THEMES[theme_name]
+def apply_theme():
     st.markdown(f"""
         <style>
         .stApp {{
-            background: {theme['bg']};
+            background: {THEME['bg']};
         }}
         
         .main-title {{
             font-size: 3rem;
             font-weight: 800;
             text-align: center;
-            color: {theme['text']};
+            color: {THEME['text']};
             margin-bottom: 2rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }}
         
         .question-card {{
-            background: {theme['surface']};
-            border: 2px solid {theme['border']};
+            background: {THEME['surface']};
+            border: 2px solid {THEME['border']};
             border-radius: 20px;
             padding: 2.5rem;
             margin: 2rem 0;
@@ -388,14 +321,14 @@ def apply_theme(theme_name: str):
         .question-text {{
             font-size: 1.8rem;
             font-weight: 600;
-            color: {theme['text']};
+            color: {THEME['text']};
             margin-bottom: 2rem;
             text-align: center;
         }}
         
         .stats-card {{
-            background: {theme['surface']};
-            border: 2px solid {theme['border']};
+            background: {THEME['surface']};
+            border: 2px solid {THEME['border']};
             border-radius: 15px;
             padding: 1.5rem;
             text-align: center;
@@ -405,32 +338,32 @@ def apply_theme(theme_name: str):
         .stat-value {{
             font-size: 2.5rem;
             font-weight: 800;
-            color: {theme['accent']};
+            color: {THEME['accent']};
         }}
         
         .stat-label {{
             font-size: 1rem;
-            color: {theme['text_secondary']};
+            color: {THEME['text_secondary']};
             margin-top: 0.5rem;
         }}
         
         .stButton > button {{
             border-radius: 15px;
-            border: 2px solid {theme['border']};
-            background: {theme['surface']};
-            color: {theme['text']};
+            border: 2px solid {THEME['border']};
+            background: {THEME['surface']};
+            color: {THEME['text']};
             transition: all 0.3s ease;
             font-weight: 600;
         }}
         
         .stButton > button:hover {{
-            background: {theme['card_gradient']};
+            background: {THEME['card_gradient']};
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }}
         
         .result-card {{
-            background: {theme['card_gradient']};
+            background: {THEME['card_gradient']};
             border-radius: 20px;
             padding: 3rem;
             text-align: center;
@@ -441,12 +374,11 @@ def apply_theme(theme_name: str):
         .result-score {{
             font-size: 5rem;
             font-weight: 900;
-            color: {theme['text']};
+            color: {THEME['text']};
         }}
         </style>
     """, unsafe_allow_html=True)
 
-# Unauthorized Page
 def show_unauthorized_page():
     st.markdown('<h1 class="main-title">🔒 Nicht autorisiert</h1>', unsafe_allow_html=True)
     
@@ -464,10 +396,8 @@ def show_unauthorized_page():
         """, unsafe_allow_html=True)
         
         if st.button("Zur Hauptseite", key="go_main_btn", use_container_width=True):
-            # Zur Hauptseite navigieren
             st.switch_page("main.py")
 
-# Start Page
 def show_start_page():
     st.markdown('<h1 class="main-title">🕉️ Hinduismus Quiz</h1>', unsafe_allow_html=True)
     
@@ -475,22 +405,11 @@ def show_start_page():
     with col2:
         st.markdown('<div class="question-card">', unsafe_allow_html=True)
         
-        # Zeige angemeldeten Benutzer an
         st.info(f"Angemeldet als: **{st.session_state.username}**")
-        
-        # Theme-Auswahl
-        current_index = list(THEMES.keys()).index(st.session_state.theme) if st.session_state.theme in THEMES else 0
-        theme = st.selectbox("Theme wählen", list(THEMES.keys()), index=current_index)
-        
-        if theme != st.session_state.theme:
-            st.session_state.theme = theme
-            save_settings(theme)
-            st.rerun()
         
         st.markdown("</div>", unsafe_allow_html=True)
         
         if st.button("Quiz starten", key="start_btn", use_container_width=True):
-            # Quiz-Daten zurücksetzen
             st.session_state.quiz_data = {
                 'current_question': 0,
                 'score': 0,
@@ -509,7 +428,6 @@ def show_start_page():
         if st.button("Zurück zur Hauptseite", key="back_main_btn", use_container_width=True):
             st.switch_page("main.py")
 
-# Quiz Page (gleich wie vorher)
 def show_quiz_page():
     questions = HINDUISMUS_QUIZ['questions']
     current_q = st.session_state.quiz_data['current_question']
@@ -521,20 +439,16 @@ def show_quiz_page():
     
     question = questions[current_q]
     
-    # Initialize question timer
     if st.session_state.quiz_data['question_start_time'] is None:
         st.session_state.quiz_data['question_start_time'] = time.time()
     
-    # Shuffle options once per question
     if not st.session_state.quiz_data['shuffled_options'] or len(st.session_state.quiz_data['shuffled_options']) != len(question['options']):
         st.session_state.quiz_data['shuffled_options'] = question['options'].copy()
         random.shuffle(st.session_state.quiz_data['shuffled_options'])
     
-    # Progress bar
     progress = (current_q + 1) / len(questions)
     st.progress(progress)
     
-    # Stats
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown(f"""
@@ -559,14 +473,12 @@ def show_quiz_page():
             </div>
         """, unsafe_allow_html=True)
     
-    # Question
     st.markdown(f"""
         <div class="question-card">
             <div class="question-text">{question['question']}</div>
         </div>
     """, unsafe_allow_html=True)
     
-    # Answer buttons in 2x2 grid
     col1, col2 = st.columns(2)
     options = st.session_state.quiz_data['shuffled_options']
     
@@ -593,13 +505,11 @@ def show_quiz_page():
                 st.session_state.quiz_data['shuffled_options'] = []
                 st.rerun()
 
-# Result Page (gleich wie vorher)
 def show_result_page():
     total_time = time.time() - st.session_state.quiz_data['start_time']
     total_questions = len(HINDUISMUS_QUIZ['questions'])
     percentage = (st.session_state.quiz_data['score'] / total_questions) * 100
     
-    # Save result
     save_result(
         st.session_state.username,
         st.session_state.quiz_data['score'],
@@ -650,7 +560,6 @@ def show_result_page():
             if st.button("Zurück zur Hauptseite", key="back_home_btn", use_container_width=True):
                 st.switch_page("main.py")
 
-# Leaderboard Page (gleich wie vorher)
 def show_leaderboard_page():
     st.markdown('<h1 class="main-title">🏆 Leaderboard</h1>', unsafe_allow_html=True)
     
@@ -659,7 +568,6 @@ def show_leaderboard_page():
     if leaderboard.empty:
         st.info("Noch keine Ergebnisse vorhanden. Sei der Erste!")
     else:
-        # Top 3
         for idx, row in leaderboard.head(3).iterrows():
             medal = ["🥇", "🥈", "🥉"][idx] if idx < 3 else "🏅"
             st.markdown(f"""
@@ -686,7 +594,6 @@ def show_leaderboard_page():
                 </div>
             """, unsafe_allow_html=True)
         
-        # Rest of leaderboard
         if len(leaderboard) > 3:
             st.markdown("### Weitere Spieler")
             for idx, row in leaderboard.iloc[3:].iterrows():
@@ -702,17 +609,13 @@ def show_leaderboard_page():
         st.session_state.page = 'start'
         st.rerun()
 
-# Main app
 def main():
-    # Session State initialisieren
     initialize_session_state()
     
-    # Prüfe ob Benutzer angemeldet ist
     if not st.session_state.username:
         show_unauthorized_page()
         return
     
-    # Session Validation bei jedem Aufruf
     status = auth_manager.check_user_status(st.session_state.username)
     if status["should_logout"]:
         st.error(f"🔒 {status['message']}")
@@ -722,10 +625,8 @@ def main():
         st.switch_page("main.py")
         return
     
-    # Theme anwenden
-    apply_theme(st.session_state.theme)
+    apply_theme()
     
-    # Seiten basierend auf Session State anzeigen
     if st.session_state.page == 'start':
         show_start_page()
     elif st.session_state.page == 'quiz':
