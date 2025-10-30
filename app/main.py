@@ -963,18 +963,6 @@ def show_dashboard() -> None:
     with col2:
         st.markdown("""
         <div class="action-card">
-            <h3>🏆</h3>
-            <h3>Bestenliste</h3>
-            <p>Top Spieler</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Rangliste", key="btn_leaderboard", use_container_width=True):
-            st.session_state.show_leaderboard = True
-            st.rerun()
-    
-    with col3:
-        st.markdown("""
-        <div class="action-card">
             <h3>📄</h3>
             <h3>Daten</h3>
             <p>PDF & Ergebnisse</p>
@@ -984,7 +972,7 @@ def show_dashboard() -> None:
             st.session_state.show_pdf_data = True
             st.rerun()
     
-    with col4:
+    with col3:
         st.markdown("""
         <div class="action-card">
             <h3>🎨</h3>
@@ -995,19 +983,78 @@ def show_dashboard() -> None:
         if st.button("Theme", key="btn_theme", use_container_width=True):
             st.session_state.show_theme_selector = True
             st.rerun()
-
-    # Admin Bereich
-    if st.session_state.role == UserRole.ADMIN:
-        st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
+    
+    with col4:
         st.markdown("""
         <div class="action-card">
             <h3>⚙️</h3>
-            <h3>Admin-Bereich</h3>
-            <p>Benutzerverwaltung und Einstellungen</p>
+            <h3>Admin</h3>
+            <p>Benutzerverwaltung</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Zum Admin-Panel", key="btn_admin", use_container_width=True):
+        if st.button("Admin", key="btn_admin", use_container_width=True):
             st.switch_page("pages/admin.py")
+
+    # Leaderboard direkt im Dashboard
+    st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
+    st.markdown("<h2 style='margin-bottom: 1.5rem;'>🏆 Aktuelle Bestenliste</h2>", unsafe_allow_html=True)
+    
+    leaderboard = get_leaderboard()
+    
+    if not leaderboard:
+        st.info("📊 Noch keine Quiz-Ergebnisse vorhanden. Spiele dein erstes Quiz!")
+    else:
+        # Top 3 hervorheben
+        top3_cols = st.columns(3)
+        for idx, entry in enumerate(leaderboard[:3]):
+            with top3_cols[idx]:
+                medal = ["🥇", "🥈", "🥉"][idx]
+                is_current = entry.get("username") == st.session_state.username
+                highlight = "border: 3px solid #667eea; background: rgba(102, 126, 234, 0.1);" if is_current else ""
+                
+                st.markdown(f"""
+                <div class="stats-card" style="{highlight}">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">{medal}</div>
+                    <div style="font-weight: 800; font-size: 1.3rem; color: #667eea; margin-bottom: 0.5rem;">
+                        {entry.get('username', 'Unknown')}
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">
+                        {entry.get('percentage', 0):.1f}%
+                    </div>
+                    <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                        🎯 {entry.get('correct', 0)}/{entry.get('total', 0)}<br>
+                        ⏱️ {format_time(entry.get('time_seconds', 0))}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # Restliche Top 10
+        if len(leaderboard) > 3:
+            st.markdown("<h4 style='margin: 2rem 0 1rem 0;'>Weitere Top-Spieler</h4>", unsafe_allow_html=True)
+            
+            for rank, entry in enumerate(leaderboard[3:10], 4):
+                is_current = entry.get("username") == st.session_state.username
+                badge = '<span style="background:linear-gradient(135deg, #667eea, #764ba2);color:#fff;padding:0.2rem 0.6rem;border-radius:8px;margin-left:0.5rem;font-weight:700;">Du</span>' if is_current else ""
+                
+                st.markdown(f"""
+                <div class="leaderboard-item">
+                    <div style="display:flex;align-items:center;gap:1.5rem;flex:1">
+                        <div class="leaderboard-rank">#{rank}</div>
+                        <div>
+                            <div style="font-weight:700;font-size:1.1rem">{entry.get('username', 'Unknown')}{badge}</div>
+                            <div style="font-size:0.9rem;color:rgba(255,255,255,0.6)">
+                                {entry.get('quiz_name', 'Unknown Quiz')}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="font-weight:700;font-size:1.3rem;color:#667eea">{entry.get('percentage', 0):.1f}%</div>
+                        <div style="font-size:0.9rem;color:rgba(255,255,255,0.6)">
+                            🎯 {entry.get('correct', 0)}/{entry.get('total', 0)} | ⏱️ {format_time(entry.get('time_seconds', 0))}
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
     # Logout Button
     st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
@@ -1074,26 +1121,6 @@ def main():
         st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
         if st.button("← Zurück zum Dashboard", use_container_width=True):
             st.session_state.show_theme_selector = False
-            st.rerun()
-        
-        render_footer()
-        return
-
-    # Bestenliste
-    if st.session_state.get("show_leaderboard"):
-        apply_theme()
-        st.markdown(f"""
-        <div class="main-header">
-            <h1 class="main-title">🏆 Bestenliste</h1>
-            <p class="main-subtitle">Die besten Quiz-Champions</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        show_leaderboard_page()
-        
-        st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
-        if st.button("← Zurück zum Dashboard", use_container_width=True):
-            st.session_state.show_leaderboard = False
             st.rerun()
         
         render_footer()
