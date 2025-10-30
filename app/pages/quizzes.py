@@ -1,4 +1,4 @@
-"""Created by lirox3 2025"""
+"""Created by l1rox3 2025"""
 import streamlit as st
 import random
 import time
