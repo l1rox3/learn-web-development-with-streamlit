@@ -435,25 +435,6 @@ def init_session() -> None:
 # =========================================================
 # DATA FUNKTIONEN
 # =========================================================
-def load_user_data(username: str) -> Dict:
-    """Lädt Benutzerdaten mit runs."""
-    user_file = os.path.join(ANSWERS_DIR, f"{username}.json")
-    if not os.path.exists(user_file):
-        return {"username": username, "runs": []}
-    try:
-        with open(user_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            # Migration: alte "quizzes" zu "runs"
-            if "quizzes" in data and "runs" not in data:
-                data["runs"] = data.pop("quizzes")
-            if "runs" not in data:
-                data["runs"] = []
-            return data
-    except Exception:
-        LOG.exception("Fehler beim Laden von Benutzerdaten für %s", username)
-        return {"username": username, "runs": []}
-
-
 def get_all_results() -> List[Dict]:
     """Lädt alle gespeicherten Ergebnisse aus quizzes.py Format"""
     data_dir = Path("./data/answers")
@@ -808,39 +789,6 @@ def show_dashboard() -> None:
         <p class="main-subtitle">Bereit für deine nächste Herausforderung?</p>
     </div>
     """, unsafe_allow_html=True)
-
-    # User Stats
-    user_data = load_user_data(st.session_state.username)
-    runs = user_data.get("runs", [])
-    total_runs = len(runs)
-    total_correct = sum(r.get("correct", 0) for r in runs)
-    total_questions = sum(r.get("total", 0) for r in runs)
-    success_rate = (total_correct / total_questions * 100) if total_questions > 0 else 0
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown(f"""
-        <div class="stats-card">
-            <div class="stats-label">🎮 Durchläufe</div>
-            <div class="stats-value">{total_runs}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""
-        <div class="stats-card">
-            <div class="stats-label">✅ Richtige Antworten</div>
-            <div class="stats-value">{total_correct}/{total_questions}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with col3:
-        st.markdown(f"""
-        <div class="stats-card">
-            <div class="stats-label">📈 Erfolgsrate</div>
-            <div class="stats-value">{success_rate:.1f}%</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
 
     # Action Cards - 3 Spalten
     col1, col2, col3 = st.columns(3)
