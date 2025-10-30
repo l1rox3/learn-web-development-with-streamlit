@@ -8,6 +8,11 @@ from datetime import datetime
 from typing import Dict, List
 import pandas as pd
 
+# Import der Auth-Funktionen
+import sys
+sys.path.append('.')
+from auth import AuthManager
+
 # Quiz Daten
 HINDUISMUS_QUIZ = {
     "title": "Kleidung und Tiere im Hinduismus",
@@ -195,7 +200,7 @@ HINDUISMUS_QUIZ = {
     ]
 }
 
-# Themes
+# Themes - Werden aus main.py übernommen
 THEMES: Dict[str, Dict[str, str]] = {
     "Purple Dream": {
         "name": "Purple Dream",
@@ -240,9 +245,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Auth Manager initialisieren
+@st.cache_resource
+def get_auth_manager():
+    return AuthManager()
+
+auth_manager = get_auth_manager()
+
 # Helper functions for settings
 def load_settings() -> Dict:
-    """Lädt die Theme-Einstellungen"""
+    """Lädt die Theme-Einstellungen aus main.py"""
     settings_file = Path("./data/settings.json")
     if settings_file.exists():
         try:
@@ -253,7 +265,7 @@ def load_settings() -> Dict:
     return {"current_theme": "Dark Minimal", "custom_theme": None}
 
 def save_settings(theme_name: str):
-    """Speichert die Theme-Einstellungen"""
+    """Speichert die Theme-Einstellungen (kompatibel mit main.py)"""
     data_dir = Path("./data")
     data_dir.mkdir(parents=True, exist_ok=True)
     
@@ -265,26 +277,16 @@ def save_settings(theme_name: str):
     with open(data_dir / "settings.json", 'w', encoding='utf-8') as f:
         json.dump(settings, f, ensure_ascii=False, indent=2)
 
-# Initialize session state
-if 'page' not in st.session_state:
-    st.session_state.page = 'start'
-if 'username' not in st.session_state:
-    st.session_state.username = ''
-if 'theme' not in st.session_state:
-    settings = load_settings()
-    st.session_state.theme = settings['current_theme']
-if 'current_question' not in st.session_state:
-    st.session_state.current_question = 0
-if 'score' not in st.session_state:
-    st.session_state.score = 0
-if 'answers' not in st.session_state:
-    st.session_state.answers = []
-if 'start_time' not in st.session_state:
-    st.session_state.start_time = None
-if 'question_start_time' not in st.session_state:
-    st.session_state.question_start_time = None
-if 'shuffled_options' not in st.session_state:
-    st.session_state.shuffled_options = []
+# Session State für Quiz-spezifische Daten
+if 'quiz_data' not in st.session_state:
+    st.session_state.quiz_data = {
+        'current_question': 0,
+        'score': 0,
+        'answers': [],
+        'start_time': None,
+        'question_start_time': None,
+        'shuffled_options': []
+    }
 
 # Helper functions
 def save_result(username: str, score: int, total: int, time_taken: float, answers: List[Dict]):
@@ -479,8 +481,10 @@ def show_start_page():
     with col2:
         st.markdown('<div class="question-card">', unsafe_allow_html=True)
         
-        username = st.text_input("Benutzername", placeholder="Gib deinen Namen ein...", key="username_input")
+        # Benutzername wird nicht mehr abgefragt, da bereits in auth.py angemeldet
+        st.info(f"Angemeldet als: **{st.session_state.username}**")
         
+        # Theme-Auswahl
         current_index = list(THEMES.keys()).index(st.session_state.theme) if st.session_state.theme in THEMES else 0
         theme = st.selectbox("Theme wählen", list(THEMES.keys()), index=current_index)
         
@@ -491,26 +495,31 @@ def show_start_page():
         
         st.markdown("</div>", unsafe_allow_html=True)
         
-        if st.button("Quiz starten", key="start_btn"):
-            if username.strip():
-                st.session_state.username = username.strip()
-                st.session_state.page = 'quiz'
-                st.session_state.current_question = 0
-                st.session_state.score = 0
-                st.session_state.answers = []
-                st.session_state.start_time = time.time()
-                st.rerun()
-            else:
-                st.error("Bitte gib einen Benutzernamen ein!")
+        if st.button("Quiz starten", key="start_btn", use_container_width=True):
+            # Quiz-Daten zurücksetzen
+            st.session_state.quiz_data = {
+                'current_question': 0,
+                'score': 0,
+                'answers': [],
+                'start_time': time.time(),
+                'question_start_time': None,
+                'shuffled_options': []
+            }
+            st.session_state.page = 'quiz'
+            st.rerun()
         
-        if st.button("Leaderboard ansehen", key="leaderboard_btn"):
+        if st.button("Leaderboard ansehen", key="leaderboard_btn", use_container_width=True):
             st.session_state.page = 'leaderboard'
+            st.rerun()
+        
+        if st.button("Zurück zur Hauptseite", key="back_main_btn", use_container_width=True):
+            st.session_state.page = 'main'
             st.rerun()
 
 # Quiz Page
 def show_quiz_page():
     questions = HINDUISMUS_QUIZ['questions']
-    current_q = st.session_state.current_question
+    current_q = st.session_state.quiz_data['current_question']
     
     if current_q >= len(questions):
         st.session_state.page = 'result'
@@ -520,13 +529,13 @@ def show_quiz_page():
     question = questions[current_q]
     
     # Initialize question timer
-    if st.session_state.question_start_time is None:
-        st.session_state.question_start_time = time.time()
+    if st.session_state.quiz_data['question_start_time'] is None:
+        st.session_state.quiz_data['question_start_time'] = time.time()
     
     # Shuffle options once per question
-    if not st.session_state.shuffled_options or len(st.session_state.shuffled_options) != len(question['options']):
-        st.session_state.shuffled_options = question['options'].copy()
-        random.shuffle(st.session_state.shuffled_options)
+    if not st.session_state.quiz_data['shuffled_options'] or len(st.session_state.quiz_data['shuffled_options']) != len(question['options']):
+        st.session_state.quiz_data['shuffled_options'] = question['options'].copy()
+        random.shuffle(st.session_state.quiz_data['shuffled_options'])
     
     # Progress bar
     progress = (current_q + 1) / len(questions)
@@ -544,12 +553,12 @@ def show_quiz_page():
     with col2:
         st.markdown(f"""
             <div class="stats-card">
-                <div class="stat-value">{st.session_state.score}</div>
+                <div class="stat-value">{st.session_state.quiz_data['score']}</div>
                 <div class="stat-label">Punkte</div>
             </div>
         """, unsafe_allow_html=True)
     with col3:
-        elapsed = int(time.time() - st.session_state.start_time)
+        elapsed = int(time.time() - st.session_state.quiz_data['start_time'])
         st.markdown(f"""
             <div class="stats-card">
                 <div class="stat-value">{elapsed}s</div>
@@ -566,19 +575,19 @@ def show_quiz_page():
     
     # Answer buttons in 2x2 grid
     col1, col2 = st.columns(2)
-    options = st.session_state.shuffled_options
+    options = st.session_state.quiz_data['shuffled_options']
     
     for idx, option in enumerate(options):
         col = col1 if idx % 2 == 0 else col2
         with col:
             if st.button(option, key=f"answer_{idx}", use_container_width=True):
-                question_time = time.time() - st.session_state.question_start_time
+                question_time = time.time() - st.session_state.quiz_data['question_start_time']
                 is_correct = option == question['answer']
                 
                 if is_correct:
-                    st.session_state.score += 1
+                    st.session_state.quiz_data['score'] += 1
                 
-                st.session_state.answers.append({
+                st.session_state.quiz_data['answers'].append({
                     "question": question['question'],
                     "selected": option,
                     "correct": question['answer'],
@@ -586,24 +595,24 @@ def show_quiz_page():
                     "time": round(question_time, 2)
                 })
                 
-                st.session_state.current_question += 1
-                st.session_state.question_start_time = None
-                st.session_state.shuffled_options = []
+                st.session_state.quiz_data['current_question'] += 1
+                st.session_state.quiz_data['question_start_time'] = None
+                st.session_state.quiz_data['shuffled_options'] = []
                 st.rerun()
 
 # Result Page
 def show_result_page():
-    total_time = time.time() - st.session_state.start_time
+    total_time = time.time() - st.session_state.quiz_data['start_time']
     total_questions = len(HINDUISMUS_QUIZ['questions'])
-    percentage = (st.session_state.score / total_questions) * 100
+    percentage = (st.session_state.quiz_data['score'] / total_questions) * 100
     
     # Save result
     save_result(
         st.session_state.username,
-        st.session_state.score,
+        st.session_state.quiz_data['score'],
         total_questions,
         total_time,
-        st.session_state.answers
+        st.session_state.quiz_data['answers']
     )
     
     st.markdown('<h1 class="main-title">Quiz abgeschlossen! 🎉</h1>', unsafe_allow_html=True)
@@ -612,7 +621,7 @@ def show_result_page():
     with col2:
         st.markdown(f"""
             <div class="result-card">
-                <div class="result-score">{st.session_state.score}/{total_questions}</div>
+                <div class="result-score">{st.session_state.quiz_data['score']}/{total_questions}</div>
                 <div class="stat-label" style="font-size: 1.5rem; margin-top: 1rem;">
                     {percentage:.1f}% richtig
                 </div>
@@ -625,19 +634,29 @@ def show_result_page():
             </div>
         """, unsafe_allow_html=True)
         
-        if st.button("Nochmal spielen", key="retry_btn"):
-            st.session_state.page = 'start'
-            st.session_state.current_question = 0
-            st.session_state.score = 0
-            st.session_state.answers = []
-            st.session_state.start_time = None
-            st.session_state.question_start_time = None
-            st.session_state.shuffled_options = []
-            st.rerun()
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col1:
+            if st.button("Nochmal spielen", key="retry_btn", use_container_width=True):
+                st.session_state.quiz_data = {
+                    'current_question': 0,
+                    'score': 0,
+                    'answers': [],
+                    'start_time': time.time(),
+                    'question_start_time': None,
+                    'shuffled_options': []
+                }
+                st.session_state.page = 'quiz'
+                st.rerun()
         
-        if st.button("Leaderboard ansehen", key="result_leaderboard_btn"):
-            st.session_state.page = 'leaderboard'
-            st.rerun()
+        with col2:
+            if st.button("Leaderboard ansehen", key="result_leaderboard_btn", use_container_width=True):
+                st.session_state.page = 'leaderboard'
+                st.rerun()
+        
+        with col3:
+            if st.button("Zurück zur Hauptseite", key="back_home_btn", use_container_width=True):
+                st.session_state.page = 'main'
+                st.rerun()
 
 # Leaderboard Page
 def show_leaderboard_page():
@@ -687,12 +706,23 @@ def show_leaderboard_page():
                     </div>
                 """, unsafe_allow_html=True)
     
-    if st.button("Zurück zum Start", key="back_btn"):
+    if st.button("Zurück zum Quiz", key="back_quiz_btn", use_container_width=True):
         st.session_state.page = 'start'
         st.rerun()
 
 # Main app
 def main():
+    # Session Validation bei jedem Aufruf
+    if "username" in st.session_state:
+        status = auth_manager.check_user_status(st.session_state.username)
+        if status["should_logout"]:
+            st.error(f"🔒 {status['message']}")
+            time.sleep(2)
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
+    
+    # Theme anwenden
     apply_theme(st.session_state.theme)
     
     if st.session_state.page == 'start':
