@@ -11,7 +11,7 @@ import pandas as pd
 # Import der Auth-Funktionen
 import sys
 sys.path.append('.')
-from pages.auth import AuthManager
+from auth import AuthManager
 
 # Quiz Daten
 HINDUISMUS_QUIZ = {
@@ -277,16 +277,32 @@ def save_settings(theme_name: str):
     with open(data_dir / "settings.json", 'w', encoding='utf-8') as f:
         json.dump(settings, f, ensure_ascii=False, indent=2)
 
-# Session State für Quiz-spezifische Daten
-if 'quiz_data' not in st.session_state:
-    st.session_state.quiz_data = {
-        'current_question': 0,
-        'score': 0,
-        'answers': [],
-        'start_time': None,
-        'question_start_time': None,
-        'shuffled_options': []
-    }
+# Session State Initialisierung
+def initialize_session_state():
+    """Initialisiert alle benötigten Session-State-Variablen"""
+    # Theme aus settings laden
+    if 'theme' not in st.session_state:
+        settings = load_settings()
+        st.session_state.theme = settings.get('current_theme', 'Dark Minimal')
+    
+    # Quiz-spezifische Daten
+    if 'quiz_data' not in st.session_state:
+        st.session_state.quiz_data = {
+            'current_question': 0,
+            'score': 0,
+            'answers': [],
+            'start_time': None,
+            'question_start_time': None,
+            'shuffled_options': []
+        }
+    
+    # Aktuelle Seite
+    if 'page' not in st.session_state:
+        st.session_state.page = 'start'
+    
+    # Benutzername - falls nicht vorhanden, zurück zur Hauptseite
+    if 'username' not in st.session_state:
+        st.session_state.page = 'unauthorized'
 
 # Helper functions
 def save_result(username: str, score: int, total: int, time_taken: float, answers: List[Dict]):
@@ -473,6 +489,27 @@ def apply_theme(theme_name: str):
         </style>
     """, unsafe_allow_html=True)
 
+# Unauthorized Page
+def show_unauthorized_page():
+    st.markdown('<h1 class="main-title">🔒 Nicht autorisiert</h1>', unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("""
+            <div class="question-card">
+                <h2 style="text-align: center; color: white; margin-bottom: 2rem;">
+                    Bitte melde dich zuerst an
+                </h2>
+                <p style="text-align: center; color: rgba(255,255,255,0.7); font-size: 1.2rem;">
+                    Du musst dich auf der Hauptseite anmelden, um das Quiz spielen zu können.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("Zur Hauptseite", key="go_main_btn", use_container_width=True):
+            # Zur Hauptseite navigieren
+            st.switch_page("main.py")
+
 # Start Page
 def show_start_page():
     st.markdown('<h1 class="main-title">🕉️ Hinduismus Quiz</h1>', unsafe_allow_html=True)
@@ -513,8 +550,7 @@ def show_start_page():
             st.rerun()
         
         if st.button("Zurück zur Hauptseite", key="back_main_btn", use_container_width=True):
-            st.session_state.page = 'main'
-            st.rerun()
+            st.switch_page("main.py")
 
 # Quiz Page
 def show_quiz_page():
@@ -655,8 +691,7 @@ def show_result_page():
         
         with col3:
             if st.button("Zurück zur Hauptseite", key="back_home_btn", use_container_width=True):
-                st.session_state.page = 'main'
-                st.rerun()
+                st.switch_page("main.py")
 
 # Leaderboard Page
 def show_leaderboard_page():
@@ -712,20 +747,27 @@ def show_leaderboard_page():
 
 # Main app
 def main():
+    # Session State initialisieren
+    initialize_session_state()
+    
     # Session Validation bei jedem Aufruf
-    if "username" in st.session_state:
+    if "username" in st.session_state and st.session_state.username:
         status = auth_manager.check_user_status(st.session_state.username)
         if status["should_logout"]:
             st.error(f"🔒 {status['message']}")
             time.sleep(2)
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
-            st.rerun()
+            st.switch_page("main.py")
+            return
     
     # Theme anwenden
     apply_theme(st.session_state.theme)
     
-    if st.session_state.page == 'start':
+    # Seiten basierend auf Session State anzeigen
+    if st.session_state.page == 'unauthorized':
+        show_unauthorized_page()
+    elif st.session_state.page == 'start':
         show_start_page()
     elif st.session_state.page == 'quiz':
         show_quiz_page()
