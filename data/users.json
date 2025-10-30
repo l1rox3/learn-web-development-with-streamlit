@@ -53,5 +53,16 @@
     "salt": "a08d8283c2695f2535304b8ade382d44",
     "failed_attempts": 0,
     "locked_until": null
+  },
+  "susi": {
+    "password_hash": "facbf076a63917040a26d46f6406e56118b663fe4aac4e83cf98d118b2951b00",
+    "role": "user",
+    "active": true,
+    "created_at": "2025-10-30T11:32:14.850985",
+    "last_login": "2025-10-30T11:32:14.850993",
+    "using_default": true,
+    "salt": "e27a8dac6f67f1a91e4bcea5fdb5b17a",
+    "failed_attempts": 0,
+    "locked_until": null
   }
 }
