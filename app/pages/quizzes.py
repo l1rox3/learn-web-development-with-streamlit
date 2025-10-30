@@ -14,12 +14,7 @@ sys.path.append('.')
 from auth import AuthManager
 
 # Quiz Daten (gleich wie vorher)
-HINDUISMUS_QUIZ = {
-    "title": "Kleidung und Tiere im Hinduismus",
-    "questions": [
-        # ... (alle Fragen wie vorher)
-    ]
-}
+
 
 # Themes (gleich wie vorher)
 THEMES: Dict[str, Dict[str, str]] = {
