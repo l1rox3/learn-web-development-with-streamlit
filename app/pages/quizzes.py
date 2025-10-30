@@ -11,7 +11,7 @@ import pandas as pd
 # Import der Auth-Funktionen
 import sys
 sys.path.append('.')
-from app.auth.auth_manager import AuthManager
+from app.auth import AuthManager
 
 # Quiz Daten
 HINDUISMUS_QUIZ = {
