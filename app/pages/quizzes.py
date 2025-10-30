@@ -1,4 +1,4 @@
-"""Created"""
+"""Created """
 import streamlit as st
 import random
 import time
